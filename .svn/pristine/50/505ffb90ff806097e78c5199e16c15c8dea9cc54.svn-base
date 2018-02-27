@@ -1,0 +1,271 @@
+//
+//  ZXUserInfoViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/2.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+protocol ZXUserInfoViewControllerDelegate: NSObjectProtocol {
+    func didUserInfoController(_ sex: Int, _ ageGroup: Int) -> Void
+}
+
+class ZXUserInfoViewController: UIViewController {
+    weak var delegate: ZXUserInfoViewControllerDelegate?
+    
+    @IBOutlet weak var titleLB: UILabel!
+    
+    @IBOutlet weak var femaleImgBtn: UIButton!
+    @IBOutlet weak var manImgBtn: UIButton!
+    
+    @IBOutlet weak var femaleBtn: UIButton!
+    @IBOutlet weak var manBtn: UIButton!
+    
+    @IBOutlet weak var selectedTitleLB: UILabel!
+    
+    @IBOutlet weak var pickerView: UIPickerView!
+    
+    @IBOutlet weak var commitBtn: ZXLoginButton!
+    
+    /** 性别
+     *0代表女
+     *1代表男
+     */
+    var gender: Int = -1
+    /** 年龄段:
+     *0代表20以下
+     *1代表20-30岁
+     *2代表30-40岁
+     *3代表40-50岁
+     *4代表50岁以上
+     */
+    var ageGroup: Int = -1
+    
+    var type: ZXAgeGroupType = .Thirty_Fourty
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.navigationItem.title = "个人资料设置"
+
+        self.titleLB.textColor = UIColor.zx_textColorTitle
+        self.selectedTitleLB.textColor = UIColor.zx_textColorTitle
+        
+        self.commitBtn.isEnabled = false
+        
+        self.requestForGetAgeGroup()
+        
+        self.zx_addNavBarButtonItems(imageNames: ["comm_back"], useOriginalColor: true, at: .left)
+        
+    }
+    
+    override func zx_leftBarButtonAction(index: Int) {
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        
+        self.navigationController?.navigationBar.barTintColor = UIColor.white
+        self.navigationController?.navigationBar.tintColor = UIColor.black
+        
+        self.navigationController?.navigationBar.titleTextAttributes = {[NSAttributedStringKey.foregroundColor:UIColor.black,NSAttributedStringKey.font:UIFont.systemFont(ofSize: 21.0)]}()
+        
+    }
+    
+    
+    
+    @IBAction func selectedSexAction(_ sender: UIButton) {
+        if sender == self.femaleImgBtn {
+            if sender.isSelected == false {
+                self.femaleImgBtn.isSelected = !sender.isSelected
+                self.femaleBtn.isSelected = sender.isSelected
+                
+                //改变男性头像颜色
+                self.manImgBtn.isSelected = !sender.isSelected;
+                self.manBtn.isSelected = !sender.isSelected;
+                //打开“完成”按钮点击事件
+                self.commitBtn.isEnabled = true;
+                
+                self.gender = 0
+            }else{
+                self.femaleImgBtn.isSelected = !sender.isSelected;
+                self.femaleBtn.isSelected = sender.isSelected;
+                //关闭“完成”按钮点击事件
+                self.commitBtn.isEnabled = false;
+            }
+        }else if sender == self.manImgBtn {
+            if sender.isSelected == false {
+                self.manImgBtn.isSelected = !sender.isSelected
+                self.manBtn.isSelected = sender.isSelected
+                
+                //改变男性头像颜色
+                self.femaleImgBtn.isSelected = !sender.isSelected;
+                self.femaleBtn.isSelected = !sender.isSelected;
+                //打开“完成”按钮点击事件
+                self.commitBtn.isEnabled = true;
+                
+                self.gender = 1
+            }else{
+                self.manImgBtn.isSelected = !sender.isSelected;
+                self.manBtn.isSelected = sender.isSelected;
+                //关闭“完成”按钮点击事件
+                self.commitBtn.isEnabled = false;
+            }
+        }
+    }
+    
+    //MARK: - 完成
+    @IBAction func commitBtnAction(_ sender: UIButton) {
+        //回调
+        if delegate != nil {
+            delegate?.didUserInfoController(self.gender, self.ageGroup)
+        }
+        //上传服务器
+        DispatchQueue.global().async {
+            //保存性别和年龄段
+            self.updateUserInfo()
+            //更新性别
+            self.requestForUpdateSex()
+            //更新年龄段
+            self.requestForGetAgeGroup()
+            //切换主控制器场景
+            DispatchQueue.main.async {
+                ZXRouter.changeRootViewController(ZXRootController.zx_tabbarVC())
+            }
+        }
+    }
+    
+    //MARK: - 保存性别和年龄段
+    func updateUserInfo() {
+        let user = ZXUser.user
+        user.sex = self.gender
+        if self.gender != -1 ,self.gender == 0 {
+            user.sexStr = "女"
+        }else if self.gender != -1,self.gender == 1 {
+            user.sexStr = "男"
+        }
+        
+        user.ageGroups = self.ageGroup
+        ZXUser.user.sync()
+    }
+    
+    lazy var dataArray: NSMutableArray = {
+        let arr: NSMutableArray = NSMutableArray.init(capacity: 5)
+        return arr
+    }()
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+}
+
+extension ZXUserInfoViewController:UIPickerViewDelegate {
+    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+        let model = self.dataArray.object(at: row) as! ZXAgeGroupModel
+        var lable: UILabel?
+        if lable == view as? UILabel{
+            lable = UILabel.init()
+        }
+        lable?.text = model.value
+        lable?.textAlignment = .center
+        lable?.font = UIFont.zx_titleFont(21.0)
+        let selectedRow = self.pickerView.selectedRow(inComponent: component)
+        if component == 0, selectedRow == row {
+            lable?.textColor = UIColor.zx_tintColor
+            lable?.font = UIFont.zx_titleFont(23.0)
+        }
+        return lable!
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        let lable = pickerView.view(forRow: row, forComponent: component) as! UILabel
+        lable.textColor = UIColor.zx_tintColor
+        lable.font = UIFont.zx_titleFont(23.0)
+        let model = self.dataArray.object(at: row) as! ZXAgeGroupModel
+//        var ageType: ZXAgeGroupType = ZXAgeGroupType.Thirty_Fourty
+//        switch model.key {
+//        case 0:
+//            ageType = .Under_Twenty
+//        case 1:
+//            ageType = .Twenty_Thirty
+//        case 2:
+//            ageType = .Thirty_Fourty
+//        case 3:
+//            ageType = .Fourty_Fifty
+//        case 4:
+//            ageType = .Older_Fifty
+//        default:
+//            break
+//        }
+        self.ageGroup = model.key
+    }
+}
+
+extension ZXUserInfoViewController:UIPickerViewDataSource {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return self.dataArray.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
+        return 34
+    }
+}
+
+//MARK: - Http
+extension ZXUserInfoViewController {
+    //MARK: - 请求年龄
+    func requestForGetAgeGroup() {
+        var dict: Dictionary<String,Any> = Dictionary.init()
+        dict["type"] = "1"
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.User.getDictList), params: dict, method: .post) { (succ, code, content, str, errMsg) in
+            if code == ZXAPI_SUCCESS {
+                if let data = content["data"],((data as? Array<Any>) != nil) {
+                    self.dataArray = ZXAgeGroupModel.mj_objectArray(withKeyValuesArray: data)
+                    
+                    self.pickerView.reloadAllComponents()
+                    self.pickerView.selectRow(2, inComponent: 0, animated: true)
+                    
+                    self.ageGroup = 2
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: (errMsg?.description)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    //MARK: - 更新性别
+    func requestForUpdateSex() {
+        var dict: Dictionary<String,Any> = Dictionary.init()
+        dict["sex"] = self.gender
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.User.updateSex), params: dict, method: .post) { (succ, code, content, str, errMsg) in
+            if code == ZXAPI_SUCCESS {
+                
+            }else{
+                ZXHUD.showFailure(in: self.view, text: (errMsg?.description)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    //MARK: - 更新年龄段
+    func requestForUpdateAgeGroups() {
+        var dict: Dictionary<String,Any> = Dictionary.init()
+        dict["ageGroups"] = self.ageGroup
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.User.updateAgeGroups), params: dict, method: .post) { (succ, code, content, str, errMsg) in
+            if code == ZXAPI_SUCCESS {
+                
+            }else{
+                ZXHUD.showFailure(in: self.view, text: (errMsg?.description)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+}
+

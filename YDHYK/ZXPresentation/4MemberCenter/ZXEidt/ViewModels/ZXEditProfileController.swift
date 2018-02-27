@@ -1,0 +1,95 @@
+//
+//  ZXEditProfileController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/9.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+typealias ZXEditProfileCompletion = (Bool,Int,Dictionary<String,Any>,String,String?) ->Void
+
+class ZXEditProfileController: NSObject {
+    //MARK: - 上传更新图片
+    class func requestForUploadHeadImage(image:UIImage,completion: ZXEditProfileCompletion?) -> Void {
+        //1.图片处理
+        // 固定图片方向
+        //        let fixImage:UIImage = UIImage.fixOrientation(image)
+        //        let cutImage:UIImage = UIImage.cut(toSquare: fixImage)
+        //        let uploadImag:UIImage = UIImage.scaleImage(with: cutImage, to: CGSize.init(width: 300.0, height: 300.0))
+        
+        var paramas:Dictionary<String,Any> = Dictionary.init()
+        paramas["directory"] = "member"
+        
+        let array:NSArray = NSArray.init(objects: image)
+        
+        ZXNetwork.uploadImage(to: ZXAPI.file(address: ZXAPIConst.FileResouce.url), images: array as! Array<UIImage>, params: paramas as Dictionary<String, Any>, compressRatio: 1.0) { (success, status, content, string, error) in
+            completion!(success, status, content, string, error?.errorMessage ?? "未知错误")
+        }
+    }
+    
+    //MARK: - 更新用户头像
+    class func requestForModifyUserIocnWithFilePath(filePath:String,completion: ZXEditProfileCompletion?) -> Void {
+        var paramas:Dictionary<String,Any> = Dictionary.init()
+        
+        if filePath.isEmpty == false {
+            let headString:String = NSString.init(format: "%@", filePath) as String
+            paramas["headPortrait"] = headString
+        }
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.updateHeadPortrait), params: paramas, method: .post) { (success, status, content, string, error) in
+            completion!(success, status, content, string, error?.errorMessage ?? "未知错误")
+        }
+    }
+    
+    //MARK: - 头像
+    class func saveUserHeadProtrait(filePath:String) ->Void {
+        let user = ZXUser.user
+        user.headPortraitFilesStr = filePath
+        ZXUser.user.sync()
+    }
+    
+    class func requestForModifySex(_ sex: Int,completion: ZXEditProfileCompletion?){
+        var paramas:Dictionary<String,Any> = Dictionary.init()
+        if sex != -1 {
+            paramas["sex"] = sex
+        }
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.updateSex), params: paramas, method: .post) { (success, status, content, string, error) in
+            completion!(success, status, content, string, error?.errorMessage ?? "未知错误")
+        }
+    }
+    
+    class func requestForModifyAgeGroup(_ ageGroup: Int,completion: ZXEditProfileCompletion?){
+        var paramas:Dictionary<String,Any> = Dictionary.init()
+        if ageGroup != -1 {
+            paramas["ageGroups"] = ageGroup
+        }
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.updateAgeGroups), params: paramas, method: .post) { (success, status, content, string, error) in
+            completion!(success, status, content, string, error?.errorMessage ?? "未知错误")
+        }
+    }
+    
+    /**
+     @pragma mark 每次启动获取一次区域数据
+     @param
+     */
+    class func requestForGetArea(completion:@escaping (NSMutableArray) -> Void) -> Void {
+        
+        print(NSHomeDirectory())
+        
+        ZXNetwork.asyncRequest(withUrl:ZXAPI.api(address: ZXAPIConst.Personal.getAreaList)
+        , params: Dictionary(), method: .post) { (success, status, content, string, error) in
+            var addrModelArray:NSMutableArray = NSMutableArray.init()
+            if success {
+                if status == ZXAPI_SUCCESS {
+                    if let data = content["data"] as? Array<Any> {
+                        addrModelArray = ZXProvinceModel.mj_objectArray(withKeyValuesArray: data).mutableCopy() as! NSMutableArray
+                        //保存
+                        ZXAddressCache.addressModelArray = addrModelArray
+                    }
+                }
+            }
+            completion(addrModelArray)
+        }
+    }
+}

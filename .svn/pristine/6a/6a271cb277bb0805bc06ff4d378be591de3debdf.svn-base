@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="ZXNoCardHearder" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="258"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="noneofcard" translatesAutoresizingMaskIntoConstraints="NO" id="xeO-l7-ht5">
+                    <rect key="frame" x="75.5" y="30" width="224" height="142"/>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="您还没有会员卡，快去附近药店扫描二维码加入会员吧，更多优惠属于您。" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JXB-DW-3DW">
+                    <rect key="frame" x="25" y="192" width="325" height="36"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="xeO-l7-ht5" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="4zs-Nz-sdM"/>
+                <constraint firstItem="JXB-DW-3DW" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="25" id="Dzf-Hp-w8o"/>
+                <constraint firstItem="JXB-DW-3DW" firstAttribute="top" secondItem="xeO-l7-ht5" secondAttribute="bottom" constant="20" id="Hte-NZ-Vzn"/>
+                <constraint firstItem="xeO-l7-ht5" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="30" id="Ldx-MZ-6hh"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="JXB-DW-3DW" secondAttribute="trailing" constant="25" id="Smz-kS-Uhj"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="noneofcard" width="224" height="142"/>
+    </resources>
+</document>

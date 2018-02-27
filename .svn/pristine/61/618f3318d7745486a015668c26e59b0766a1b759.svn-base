@@ -1,0 +1,147 @@
+//
+//  ZXPrescriptionViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/6.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+/// 新增处方列表
+class ZXPrescriptionViewController: ZXUIViewController {
+
+    @IBOutlet weak var tblList: UITableView!
+    var currentPage = 1
+    var dataList: Array<ZXPrescriptionModel> = []
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "处方"
+        // Do any additional setup after loading the view.
+        self.zx_addNavBarButtonItems(imageNames: ["h_nav_add"], useOriginalColor: false, at: .right)
+        
+        self.tblList.backgroundColor = UIColor.zx_subTintColor
+        
+        self.tblList.register(UINib.init(nibName: ZXPrescriptionCell.NibName, bundle: nil), forCellReuseIdentifier: ZXPrescriptionCell.reuseIdentifier)
+        self.tblList.zx_addHeaderRefresh(showGif: true, target: self, action: #selector(zx_refresh))
+        self.tblList.zx_addFooterRefresh(autoRefresh: true, target: self, action: #selector(zx_loadmore))
+        self.tblList.mj_header.beginRefreshing()
+        
+    }
+    
+    override func zx_refresh() {
+        currentPage = 1
+        self.loadPrescriptionList(showHUD: false)
+    }
+    
+    override func zx_loadmore() {
+        currentPage += 1
+        self.loadPrescriptionList(showHUD: false)
+    }
+    
+    func loadPrescriptionList(showHUD: Bool) {
+        if showHUD {
+            ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+        }
+        ZXPrescriptionViewModel.list(pageNum: currentPage, pageSize: ZX.PageSize) { (success, code, list, errorMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            self.tblList.mj_header.endRefreshing()
+            self.tblList.mj_footer.endRefreshing()
+            ZXEmptyView.hide(from: self.tblList)
+            ZXEmptyView.hide(from: self.view)
+            if success {
+                if let list = list {
+                    if self.currentPage == 1 {
+                        self.dataList = list
+                    } else {
+                        self.dataList.append(contentsOf: list)
+                    }
+                    if self.dataList.count < ZX.PageSize {
+                        self.tblList.mj_footer.endRefreshingWithNoMoreData()
+                    }
+                    self.tblList.reloadData()
+                }
+                if self.dataList.count == 0 {
+                    ZXEmptyView.show(in: self.tblList, type: .noData, text: "您还没有处方记录,\n可点击右上角+号添加保存")
+                }
+            } else {
+                if code != ZXAPI_LOGIN_INVALID {
+                    if self.dataList.count > 0 {//之前有数据，再次获取时网络出错
+                        if code == ZXAPI_HTTP_TIME_OUT {
+                            ZXHUD.showFailure(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                        } else {
+                            ZXHUD.showFailure(in: self.view, text: "此时无法访问服务器", delay: ZX.HUDDelay)
+                        }
+                    } else {//第一次获取数据就出错 详细网络连接错误
+                        if code == ZXAPI_HTTP_ERROR {
+                            ZXEmptyView.show(in: self.view, type: .networkError, text: nil, retry: {
+                                self.loadPrescriptionList(showHUD: true)
+                            })
+                        } else {
+                            ZXEmptyView.show(in: self.tblList, type: .noData, text: "您还没有处方记录,\n可点击右上角+号添加保存")
+                            ZXHUD.showFailure(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                        }
+                    }
+                } else {
+                    if self.dataList.count == 0 {
+                        ZXEmptyView.show(in: self.tblList, type: .noData, text: "您还没有处方记录,\n可点击右上角+号添加保存")
+                    }
+                }
+            }
+        }
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        ZXAlertUtils.showActionSheet(withTitle: nil, message: nil, buttonTexts: ["拍照", "从手机相册取"], cancelText: nil) { (index) in
+            if index == 0 {
+                
+            } else if index == 1 {
+                
+            }
+        }
+    }
+}
+
+extension ZXPrescriptionViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        DispatchQueue.main.async {
+            ZXAlertUtils.showActionSheet(withTitle: "添加处方", message: nil, buttonTexts: ["查看处方原图", "删除处方"], cancelText: nil) { (index) in
+                if index == 0 {
+                    
+                } else if index == 1 {
+                    
+                }
+            }
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return ZXPrescriptionCell.height
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 10
+    }
+}
+
+extension ZXPrescriptionViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: ZXPrescriptionCell.reuseIdentifier, for: indexPath) as! ZXPrescriptionCell
+        cell.reloadData(model: self.dataList[indexPath.section])
+        return cell
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return self.dataList.count
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+}

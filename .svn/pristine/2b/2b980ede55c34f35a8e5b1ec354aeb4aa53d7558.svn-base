@@ -1,0 +1,23 @@
+//
+//  ZXAgeGroupModel.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/3.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+@objcMembers class ZXAgeGroupModel: NSObject {
+
+    var key: String = ""
+    var remark: String = ""
+    var type: String = ""
+    var typeLabel: String = ""
+    var uid: Int = -1
+    var value: String = ""
+    
+    override static func mj_replacedKeyFromPropertyName() -> [AnyHashable : Any]! {
+        return ["uid":"id"];
+    }
+}

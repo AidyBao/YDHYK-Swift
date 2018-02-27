@@ -1,0 +1,336 @@
+//
+//  ZXAddRemindViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXAddRemindViewController: ZXUIViewController {
+    struct TextTag {
+        static let drugName = 5311
+        static let dosage   = 5312
+        static let remark   = 5313
+        static let cycle    = 5314
+    }
+    //
+    @IBOutlet weak var drugNameText: UITextField!
+    @IBOutlet weak var dosageText: UITextField!
+    @IBOutlet weak var descText: UITextField!
+    @IBOutlet weak var historyBtn: UIButton!
+    @IBOutlet weak var unitBtn: ZXBButton!
+    //
+    @IBOutlet weak var drugCycleText: UITextField!
+    @IBOutlet weak var drugCycleBtn: UIButton!
+    //
+    @IBOutlet weak var drugTimeView: ZXSettingTimeView!
+    /* 用药时间*/
+    var drugDateStr: String = ""
+    /* 用药单位*/
+    var unitStr: String     = ""
+    /* 用药周期的键*/
+    var cycleKey: String    = ""
+    
+    class func loadStoryBoard() -> ZXAddRemindViewController {
+        return UIStoryboard.init(name: "DrugRemind", bundle: nil).instantiateViewController(withIdentifier: "ZXAddRemind") as! ZXAddRemindViewController
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.title = "添加提醒"
+        self.view.backgroundColor = UIColor.white
+        
+        //nav
+        self.zx_addNavBarButtonItems(textNames: ["保存"], font: nil, color: nil, at: .right)
+        
+        //Http
+        self.requestForHistoryOrder()
+        self.requestForDrugUnits()
+        self.requestForDrugCycle()
+        
+        //
+        self.setUI()
+        
+        //获取时间设置
+        self.getDate()
+    }
+    
+    func setUI() {
+        self.drugNameText.delegate = self
+        self.dosageText.delegate = self
+        self.descText.delegate = self
+        self.drugCycleText.delegate = self
+        
+        self.drugNameText.textColor = UIColor.zx_textColorTitle
+        self.dosageText.textColor = UIColor.zx_textColorTitle
+        self.descText.textColor = UIColor.zx_textColorTitle
+        self.drugCycleText.textColor = UIColor.zx_textColorTitle
+    }
+    
+    //MARK: - NAV/保存
+    override func zx_rightBarButtonAction(index: Int) {
+        self.resignFirstRespond()
+        self.requestForSave()
+    }
+    
+    //MARK: - 获取时间设置
+    func getDate() {
+        self.drugTimeView.completion = {drugDateArr in
+            var arr: Array<String> = Array.init()
+            for model in drugDateArr {
+                arr.append(model.drugTime)
+            }
+            self.drugDateStr = arr.joined(separator: ",")
+        }
+    }
+    
+    //MARK: - 历史记录
+    @IBAction func historyBtnAction(_ sender: UIButton) {
+        self.resignFirstRespond()
+        let hisVC: ZXHistoryOrderController = ZXHistoryOrderController()
+        hisVC.delegate = self
+        hisVC.hidesBottomBarWhenPushed = true
+        hisVC.histOrderArray = self.hisOrderArr
+        self.navigationController?.pushViewController(hisVC, animated: true)
+    }
+    
+    //Mark: - 单位
+    @IBAction func unitBtnAction(_ sender: UIButton) {
+        self.resignFirstRespond()
+        if self.drugUnitsArr.count > 0 {
+            let arr: NSMutableArray = NSMutableArray.init(capacity: 5)
+            for model in self.drugUnitsArr {
+                arr.add(model.value)
+            }
+            
+            let drugUnitsView: ZXPopView = ZXPopView.loadNib()
+            drugUnitsView.delegate = self
+            drugUnitsView.flag = ZXPopView.PopViewFlag.DrugUnits
+            ZXRootController.appWindow()?.addSubview(drugUnitsView)
+            drugUnitsView.loadData(NSMutableArray.init(array: arr),"选择用药单位","")
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "暂无数据", delay: ZX.HUDDelay)
+        }
+    }
+    
+    //MARK: - 用药周期
+    @IBAction func drugCycleBtnAction(_ sender: UIButton) {
+        self.resignFirstRespond()
+        if self.drugUnitsArr.count > 0 {
+            let arr: NSMutableArray = NSMutableArray.init(capacity: 5)
+            for model in self.drugCycleArr {
+                arr.add(model.value)
+            }
+            
+            let drugCycleView: ZXPopView = ZXPopView.loadNib()
+            drugCycleView.delegate = self
+            drugCycleView.flag = ZXPopView.PopViewFlag.DrugCycle
+            ZXRootController.appWindow()?.addSubview(drugCycleView)
+            drugCycleView.loadData(NSMutableArray.init(array: arr),"选择用药周期","")
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "暂无数据", delay: ZX.HUDDelay)
+        }
+    }
+    
+    //MARK: - 注销TextField响应
+    func resignFirstRespond() {
+        self.view.endEditing(true)
+        self.drugNameText.resignFirstResponder()
+        self.dosageText.resignFirstResponder()
+        self.descText.resignFirstResponder()
+        self.drugCycleText.resignFirstResponder()
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    //MARK: - Lazy
+    /** 历史订单*/
+    lazy var hisOrderArr: Array<ZXHistoryOrderModel> = {
+        let arr: Array<ZXHistoryOrderModel> = Array.init()
+        return arr
+    }()
+    
+    /** 用药单位*/
+    lazy var drugUnitsArr: Array<ZXCommonModel> = {
+        let arr: Array<ZXCommonModel> = Array.init()
+        return arr
+    }()
+    
+    /** 用药提醒周期*/
+    lazy var drugCycleArr: Array<ZXCommonModel> = {
+        let arr: Array<ZXCommonModel> = Array.init()
+        return arr
+    }()
+}
+
+//MARK: - UITextFieldDelegate
+extension ZXAddRemindViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        switch textField.tag {
+        case TextTag.drugName:
+            if range.location > 15 {
+                ZXHUD.showFailure(in: self.view, text: "药品名称不能大于16个字符", delay: ZX.HUDDelay)
+                return false
+            }
+        case TextTag.dosage:
+            if range.location > 7 {
+                ZXHUD.showFailure(in: self.view, text: "药品名称不能大于8个字符", delay: ZX.HUDDelay)
+                return false
+            }
+        case TextTag.remark:
+            if range.location > 15 {
+                ZXHUD.showFailure(in: self.view, text: "药品名称不能大于16个字符", delay: ZX.HUDDelay)
+                return false
+            }
+        default:
+            break
+        }
+        return true
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+}
+
+//MARK: - ZXHistoryOrderControllerDelegate
+extension ZXAddRemindViewController: ZXHistoryOrderControllerDelegate {
+    func didHistoryOrderCell(_ model: ZXHistoryOrderDetailModel) {
+        self.drugNameText.text = model.drugName
+    }
+}
+
+extension ZXAddRemindViewController: ZXPopViewDelegate {
+    func didSelectedPopViewCell(_ str: String, _ flag: Int) {
+        switch flag {
+        case ZXPopView.PopViewFlag.DrugUnits:
+            self.unitBtn.setTitle(str, for: .normal)
+            self.unitStr = str
+        case ZXPopView.PopViewFlag.DrugCycle:
+            self.drugCycleText.text = str
+            for model in self.drugCycleArr {
+                if model.value == str {
+                    self.cycleKey = model.key
+                }
+            }
+        default:
+            break
+        }
+    }
+}
+
+//MARK: - HTTP
+extension ZXAddRemindViewController {
+    //MARK: - 用药提醒历史订单药品列表
+    func requestForHistoryOrder() {
+        ZXAddRemindControl.requestForGetHistoryDrugOrder { (succ, code, hisArr) in
+            if succ,hisArr?.count != 0 {
+                self.hisOrderArr = hisArr!
+                self.historyBtn.isHidden = false
+            }else{
+                self.historyBtn.isHidden = true
+                
+                /* 测试数据
+                for i in 0..<5 {
+                    let model = ZXHistoryOrderModel()
+                    model.drugstoreName = "name+\(arc4random_uniform(UInt32(i*5)))"
+                    model.orderDateStr = "2017-10-22 18:30:00"
+                    var arr:Array<Any> = []
+                    for _ in 0..<3 {
+                        let subMod = ZXHistoryOrderDetailModel()
+                        subMod.drugName = "药名+\(arc4random_uniform(UInt32(i*5)))"
+                        arr.append(subMod)
+                    }
+                    model.orderDetailList = arr
+                    self.hisOrderArr.append(model)
+                }
+                */
+            }
+        }
+    }
+    
+    //MARK: - 药品单位
+    func requestForDrugUnits() {
+        ZXAddRemindControl.requestForGetDrugUnits("10", completion: { (succ, Code, dictList) in
+            if succ,dictList?.count != 0 {
+                self.drugUnitsArr = dictList!
+            }
+        })
+    }
+    
+    //MARK: - 用药周期
+    func requestForDrugCycle() {
+        ZXAddRemindControl.requestForGetDrugUnits("8", completion: { (succ, Code, dictList) in
+            if succ,dictList?.count != 0 {
+                self.drugCycleArr = dictList!
+            }
+        })
+    }
+    
+    //MARK: - 保存
+    func requestForSave() {
+        
+        var dict: Dictionary<String,Any> = Dictionary()
+        if self.drugNameText.text?.isEmpty == false {
+            dict["drugName"] = self.drugNameText.text
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "药品名不能为空", delay: ZX.HUDDelay)
+            return
+        }
+        
+        if self.dosageText.text?.isEmpty == false {
+            dict["dosage"] = self.dosageText.text
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "每次用量不能为空", delay: ZX.HUDDelay)
+            return
+        }
+        
+        if self.unitBtn.titleLabel?.text?.isEmpty == false {
+            dict["unitValue"] = self.unitBtn.titleLabel?.text
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "用药单位不能为空", delay: ZX.HUDDelay)
+            return
+        }
+        
+        if self.descText.text?.isEmpty == false {
+            dict["notes"] = self.descText.text
+        }
+        
+        if self.drugCycleText.text?.isEmpty == false,self.cycleKey.isEmpty == false {
+            dict["cycleValue"] = self.drugCycleText.text
+            dict["cycleKey"] = self.cycleKey
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "用药周期不能为空", delay: ZX.HUDDelay)
+            return
+        }
+        
+        if self.drugDateStr.isEmpty == false {
+            dict["remindTimes"] = self.drugDateStr
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "用药时间不能为空", delay: ZX.HUDDelay)
+            return
+        }
+        
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXAddRemindControl.requestForAddDrugRemind(dict) { (succ, code, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if succ {
+                if code == ZXAPI_SUCCESS {
+                    ZXHUD.showSuccess(in: self.view, text: "设置成功", delay: ZX.HUDDelay)
+                    //
+                    self.navigationController?.popViewController(animated: true)
+                }else{
+                    ZXHUD.showFailure(in: self.view, text: errMsg!, delay: ZX.HUDDelay)
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: errMsg!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+}

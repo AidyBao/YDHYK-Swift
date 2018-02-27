@@ -1,0 +1,21 @@
+//
+//  ZXAddTimeModel.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/24.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXAddTimeModel: NSObject {
+    var drugTime: String    = ""
+    var addQty: String      = ""
+    
+    class func setTimeModel(_ time: String,_ qty: String) -> ZXAddTimeModel{
+        let model = ZXAddTimeModel()
+        model.drugTime = time
+        model.addQty = qty
+        return model
+    }
+}

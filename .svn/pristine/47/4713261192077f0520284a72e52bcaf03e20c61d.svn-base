@@ -1,0 +1,35 @@
+//
+//  ZXTitleButton.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/7.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXTitleButton: ZXUIButton {
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.setTitleColor(UIColor.white, for: UIControlState.normal)
+        self.setImage(#imageLiteral(resourceName: "icon-go"), for: UIControlState.normal)
+        self.setImage(#imageLiteral(resourceName: "icon-go"), for: UIControlState.selected)
+        sizeToFit()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+        
+    /**
+     这个方法里调整布局
+     */
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        titleLabel?.frame.origin.x = 0
+        imageView?.frame.origin.x = titleLabel!.frame.size.width + 2
+    }
+
+}

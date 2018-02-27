@@ -1,0 +1,31 @@
+//
+//  ZXDiscoverSamllTypeCell.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/3.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXDiscoverSamllTypeCell: UITableViewCell {
+
+    @IBOutlet weak var lbTitle: UILabel!
+    @IBOutlet weak var lbType: UILabel!
+    @IBOutlet weak var lbMediaName: UILabel!
+    
+    @IBOutlet weak var imgIcon: UIImageView!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+        self.selectionStyle = .none
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+
+        // Configure the view for the selected state
+    }
+    
+}

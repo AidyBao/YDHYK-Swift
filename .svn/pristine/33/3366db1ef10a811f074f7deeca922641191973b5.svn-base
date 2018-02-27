@@ -1,0 +1,91 @@
+//
+//  ZXAddNewReportAnalyseViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/16.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+
+/// 新增化验单
+class ZXAddNewReportAnalyseViewController: ZXUIViewController {
+    //来源拍照分析-暂时没有接口
+    var imgReport: UIImage?
+    var imgUrlString: String?
+    
+    @IBOutlet weak var VTips: UIView!
+    @IBOutlet weak var imgvSnap: UIImageView!
+    @IBOutlet weak var topBackView: UIView!
+    @IBOutlet weak var btnReviewImage: ZXUIButton!
+    @IBOutlet weak var tblReportItem: UITableView!
+    @IBOutlet weak var searchResultBackView: UIView!
+    @IBOutlet weak var maskView: UIView!
+    
+    @IBOutlet weak var lbTipsInfo: UILabel!
+    @IBOutlet weak var tipsViewHeight: NSLayoutConstraint!
+    @IBOutlet weak var topBackHeight: NSLayoutConstraint! // 110 0
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        self.title = "化验单分析"
+        // Do any additional setup after loading the view.
+        self.zx_addNavBarButtonItems(textNames: ["模板"], font: nil, color: nil, at: .right)
+        self.view.backgroundColor = UIColor.zx_subTintColor
+        if imgUrlString == nil && imgReport == nil {
+            topBackHeight.constant = 0
+        } else {
+            topBackHeight.constant = 110
+            if let url = imgUrlString {
+                self.imgvSnap.kf.setImage(with: URL.init(string: url))
+            } else {
+                self.imgvSnap.image = imgReport
+            }
+        }
+        self.VTips.backgroundColor = UIColor.zx_subTintColor
+        self.lbTipsInfo.font = UIFont.zx_bodyFont(12)
+        self.lbTipsInfo.textColor = UIColor.zx_tintColor
+        self.lbTipsInfo.text = "分析结果仅作参考,具体请以医师分析为准。"
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if self.tipsViewHeight.constant < 30 {
+            self.tipsViewHeight.constant = 30
+            UIView.animate(withDuration: 0.3, animations: {
+              self.view.layoutIfNeeded()
+            })
+        }
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        let templateVC = ZXReportTemplateSelectViewController()
+        templateVC.checkEnd = { list in
+            for l in list {
+                print(l.itemName)
+            }
+        }
+        self.navigationController?.pushViewController(templateVC, animated: true)
+    }
+    
+    //MARK: - Clear Action
+    @IBAction func clearAction(_ sender: UIButton) {
+        
+    }
+    //MARK: - StartAnalyseAction
+    @IBAction func startAnalyse(_ sender: UIButton) {
+        
+    }
+    //MARK: - Report List
+    @IBAction func reportListAction(_ sender: UIButton) {
+        let list = ZXReportAnalyseListViewController()
+        self.navigationController?.pushViewController(list, animated: true)
+    }
+    
+    @IBAction func reviewSourceImage(_ sender: UIButton) {
+        
+    }
+}

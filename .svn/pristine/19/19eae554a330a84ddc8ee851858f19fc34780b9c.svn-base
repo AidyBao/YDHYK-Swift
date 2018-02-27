@@ -1,0 +1,38 @@
+//
+//  ZXSearchModel.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/8.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+@objcMembers class ZXSearchModel: LKDBModel {
+    
+    var storeId: Int = 0
+    var groupId: Int = 0
+    var groupName: String = ""
+    var name: String = ""
+    var tel: String = ""
+    var address: String = ""
+    var longitude: Float = 0
+    var latitude: Float = 0
+    var provinceId: Int = 0
+    var provinceName: String = ""
+    var cityId: Int = 0
+    var cityName: String = ""
+    var districtId: Int = 0
+    var districtName: String = ""
+    var profile: String = ""
+    var headPortrait: String = ""
+    var headPortraitStr: String = ""
+    var qrCode: String = ""
+    var status: Int = 0
+    var remark: String = ""
+    var distance: Float = 0
+    var isChineseMedicine: Int = -1
+    var isMember: Int = -1
+    /** 添加一个float字段，方便SQL筛选条件*/
+    var distanceF: Float = 0
+}

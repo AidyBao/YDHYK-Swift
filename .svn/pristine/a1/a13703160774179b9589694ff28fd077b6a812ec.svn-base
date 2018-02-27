@@ -1,0 +1,330 @@
+//
+//  ZXNearbyRootViewController+BMap.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/16.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+//MARK: - BMKMapViewDelegate
+extension ZXNearbyRootViewController: BMKMapViewDelegate {
+    func mapView(_ mapView: BMKMapView!, viewFor annotation: BMKAnnotation!) -> BMKAnnotationView! {
+        if ((annotation as? BMKPointAnnotation) != nil) {
+            //1.自定义annotation
+            let normalAnnotationViewID: String = "NormalAnnotation"
+            var annoView = mapView.dequeueReusableAnnotationView(withIdentifier: normalAnnotationViewID) as! ZXNormalAnnotationView?
+            if annoView == nil {
+                annoView = ZXNormalAnnotationView.init(annotation: annotation, reuseIdentifier: normalAnnotationViewID)
+                //不显示点击标注后的视图
+                annoView?.canShowCallout = false
+            }
+            
+            //2.取值
+            let  model: ZXSearchModel = self.dataModelArray.object(at: self.index) as! ZXSearchModel
+            
+            //3.自定义标注
+            var image: UIImage = UIImage.init()
+            if model.isChineseMedicine == 1 {
+                image = #imageLiteral(resourceName: "yg-small")
+            }else if model.isChineseMedicine == 0{
+                image = #imageLiteral(resourceName: "yd-small")
+            }
+            annoView?.size = image.size
+            annoView?.setNormalImage(image)
+            annoView?.isChineseMedicine = Int(model.isChineseMedicine)
+            
+            //4.设置索引
+            annoView?.storeId = Int(model.storeId)
+            if self.index < self.dataModelArray.count - 1 {
+                self.index += 1
+            }
+            annoView?.annotation = annotation
+            
+            return annoView
+        }
+        
+        return nil
+    }
+    
+    func mapView(_ mapView: BMKMapView!, didSelect view: BMKAnnotationView!) {
+        self.isMapBlank = false
+        self.mapView(self.mapView, didDeselect: self.mapView.view(for: self.lastAnnotation))
+        //1.切换标注图标
+        if ((view as? ZXNormalAnnotationView) != nil) {
+            let normalView: ZXNormalAnnotationView = view as! ZXNormalAnnotationView
+            normalView.normalImag = UIImage.init()
+            var image: UIImage = UIImage.init()
+            if normalView.isChineseMedicine == 1 {
+                image = #imageLiteral(resourceName: "yg-big")
+            }else if normalView.isChineseMedicine == 0 {
+                image = #imageLiteral(resourceName: "yd-big")
+            }
+            normalView.setNormalImage(image)
+            
+            self.lastAnnotation = normalView.annotation as! BMKPointAnnotation
+            
+            //2.刷新底部视图数据
+            let dataArray: NSMutableArray = NSMutableArray.init(capacity: 1)
+            for model in self.dataModelArray {
+                let model = model as! ZXSearchModel
+                if model.storeId == normalView.storeId {
+                    dataArray.add(model)
+                    self.detailView.loadData(dataArray)
+                }
+            }
+        }
+    }
+    
+    func mapView(_ mapView: BMKMapView!, didDeselect view: BMKAnnotationView!) {
+        if (view as? ZXNormalAnnotationView) != nil, self.isMapBlank == false {
+            let normalView: ZXNormalAnnotationView = view as! ZXNormalAnnotationView
+            var img: UIImage = UIImage.init()
+            if normalView.isChineseMedicine == 1 {
+                img = #imageLiteral(resourceName: "yg-small")
+            }else{
+                img = #imageLiteral(resourceName: "yd-small")
+            }
+            normalView.setNormalImage(img)
+        }
+    }
+    
+    func mapView(_ mapView: BMKMapView!, onClickedMapBlank coordinate: CLLocationCoordinate2D) {
+        let lastView: BMKAnnotationView = self.mapView.view(for: self.lastAnnotation)
+        self.isMapBlank = true
+        if lastView.isSelected == false {
+            self.mapView(self.mapView, didSelect: self.mapView.view(for: self.lastAnnotation))
+        }
+    }
+}
+
+//MARK: - BMKLocationServiceDelegate
+extension ZXNearbyRootViewController: BMKLocationServiceDelegate {
+    func didUpdateUserHeading(_ userLocation: BMKUserLocation!) {
+        self.mapView.updateLocationData(userLocation)
+    }
+    
+    func didUpdate(_ userLocation: BMKUserLocation!) {
+        self.mapView.updateLocationData(userLocation)
+        self.userLocation = userLocation.location.coordinate
+        if userLocation.location.coordinate.latitude != 0, userLocation.location.coordinate.longitude != 0 {
+            if self.isFirstOpenMap == false {//首次进入地图获取位置成功后请求数据
+                //附近药店请求
+                self.requestForPharmacyList()
+                self.isFirstOpenMap = true
+            }
+        }
+    }
+}
+
+//MARK: - HTTP
+extension ZXNearbyRootViewController {
+    func requestForPharmacyList() {
+        self.dataModelArray.removeAllObjects()
+        var dict:Dictionary<String,Any> = Dictionary()
+        dict["latitude"] = self.userLocation.latitude
+        dict["longitude"] = self.userLocation.longitude
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Nearby.nearbyDrugstore), params: dict, method: .post) { (succ, code, content, str, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if code == ZXAPI_SUCCESS {
+                if let data = content["data"] as? Array<Dictionary<String,Any>>,data.count != 0{
+                    self.dataModelArray = ZXSearchModel.mj_objectArray(withKeyValuesArray: data)
+                    //
+                    self.addNormalAnnotation()
+                    //
+                    self.loadDetailData()
+                    //
+                    self.sava()
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: (errMsg?.errorMessage)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    //标注
+    func addNormalAnnotation() {
+        self.index = 0
+        if self.mapView.annotations.count != 0 {
+            self.mapView.removeAnnotation(self.mapView.annotations as! BMKAnnotation)
+        }
+        
+        let annoArray: NSMutableArray = NSMutableArray.init(capacity: self.dataModelArray.count)
+        for model in self.dataModelArray {
+            let model: ZXSearchModel = model as! ZXSearchModel
+            let annotation: BMKPointAnnotation = BMKPointAnnotation()
+            let la: String = (model.latitude)!
+            let lo: String = (model.longitude)!
+            let coor = CLLocationCoordinate2DMake(CLLocationDegrees.init(Double(la)!), CLLocationDegrees.init(Double(lo)!))
+            annotation.coordinate = coor
+            annoArray.add(annotation)
+        }
+        self.mapView.addAnnotations(annoArray as! [Any])
+        
+        if self.isListVCLocationClick == false {
+            self.lastAnnotation = annoArray[0] as! BMKPointAnnotation
+            self.mapView.selectAnnotation(annoArray[0] as! BMKAnnotation, animated: true)
+        }else{
+            self.selectedAnnotation(self.modelArray_store as! Array<ZXSearchModel>)
+        }
+    }
+    
+    //设置底部视图数据
+    func loadDetailData() {
+        if self.isListVCLocationClick == false {
+            let arr: NSMutableArray = NSMutableArray.init(capacity: 1)
+            let model = self.dataModelArray.object(at: 0)
+            arr.add(model)
+            self.detailView.loadData(arr)
+        }
+    }
+    
+    //保存数据库
+    func sava() {
+        for model in self.dataModelArray {
+            if let model = model as? ZXSearchModel {
+                let str = model.distance.replacingOccurrences(of: "km", with: "")
+                model.distanceF = Float(str)!
+            }
+        }
+        DispatchQueue.global().async {
+            ZXSearchModel.clearTable()
+            let succ = ZXSearchModel.save(self.dataModelArray as! [ZXSearchModel])
+            if succ == true {
+                print("Save Successed!")
+            }
+        }
+    }
+    
+    //取消和选中
+    func selectedAnnotation(_ array: Array<ZXSearchModel>) {
+        let model = array.first
+        let la: String = (model?.latitude)!
+        let lo: String = (model?.longitude)!
+        let coor = CLLocationCoordinate2DMake(CLLocationDegrees.init(Double(la)!), CLLocationDegrees.init(Double(lo)!))
+        
+        //2.取消选中
+        let annoArray: NSArray = self.mapView.annotations! as NSArray
+        annoArray.enumerateObjects { (_ objct: Any, _ index: Int, _ stop: UnsafeMutablePointer<ObjCBool>) in
+            let deselectAnno: BMKPointAnnotation = objct as! BMKPointAnnotation
+            if deselectAnno.coordinate.latitude == self.lastAnnotation.coordinate.latitude , deselectAnno.coordinate.longitude == self.lastAnnotation.coordinate.longitude {
+                stop[0] = true
+                self.mapView(self.mapView, didDeselect: self.mapView.view(for: deselectAnno))
+            }
+        }
+        
+        //3.选中
+        let selectArray: NSArray = self.mapView.annotations! as NSArray
+        selectArray.enumerateObjects { (_ objct: Any, _ index: Int, _ stop: UnsafeMutablePointer<ObjCBool>) in
+            let selectAnno: BMKPointAnnotation = objct as! BMKPointAnnotation
+            print(selectAnno.coordinate.latitude,selectAnno.coordinate.longitude)
+            if selectAnno.coordinate.latitude == coor.latitude , selectAnno.coordinate.longitude == coor.longitude {
+                stop[0] = true
+                //3.1 选中
+                self.mapView(self.mapView, didSelect: self.mapView.view(for: selectAnno))
+                
+                //3.2 获取用户位置
+               let center = CLLocationCoordinate2DMake(selectAnno.coordinate.latitude, selectAnno.coordinate.longitude)
+                
+                //3.3 设置地图中心点
+                self.setUserCenter(center)
+                
+                //3.4 保存上一次的选中标准
+                self.lastAnnotation = selectAnno
+            }
+        }
+    }
+}
+
+//MARK: - 底部视图代理
+extension ZXNearbyRootViewController: ZXStoreDetailViewDelegate {
+    func didZXStoreDetailView(_ sender: UIButton, _ model: ZXSearchModel) {
+        switch sender.tag {
+        case ZXStoreCell.BtnTag.nav://导航
+            self.navigate(model)
+        case ZXStoreCell.BtnTag.tel://电话
+            self.call(model)
+        case ZXStoreCell.BtnTag.join://加入会员
+            self.joinMember(model)
+        case ZXStoreCell.BtnTag.buy://购药
+            self.buy(model)
+        default:
+            break
+        }
+    }
+    
+    //MARK: - 导航
+    func navigate(_ model: ZXSearchModel) {
+        let isOpen: Bool  = UIApplication.shared.canOpenURL(URL.init(string: "baidumap://")!)
+        if isOpen {//百度地图APP
+            let opt: BMKOpenDrivingRouteOption = BMKOpenDrivingRouteOption()
+            opt.appScheme = "resonydhyk://"
+            
+            //1.初始化起点节点
+            let startCoor : CLLocationCoordinate2D = self.userLocation
+            let start: BMKPlanNode = BMKPlanNode()
+            start.pt = startCoor
+            opt.startPoint = start
+            
+            //2.初始化终点节点
+            var destCoor : CLLocationCoordinate2D = self.userLocation
+            let end: BMKPlanNode = BMKPlanNode()
+            if model.latitude != nil,model.latitude != nil {
+                let la: String = (model.latitude)!
+                let lo: String = (model.longitude)!
+                destCoor.latitude = CLLocationDegrees.init(Double(la)!)
+                destCoor.longitude = CLLocationDegrees.init(Double(lo)!)
+                end.pt = destCoor
+            }else if model.address.count != 0 {
+                end.name = model.address
+            }
+            opt.endPoint = end
+            
+            //3.打开百度地图导航
+            BMKOpenRoute.openBaiduMapDrivingRoute(opt)
+            
+        }else{//调启Web_iOS百度地图
+            let la: String = (model.latitude)!
+            let lo: String = (model.longitude)!
+            let destCoor = CLLocationCoordinate2DMake(CLLocationDegrees.init(Double(la)!), CLLocationDegrees.init(Double(lo)!))
+            let mapURL: String = "https://api.map.baidu.com/direction?origin=latlng:\(self.userLocation.latitude),\(self.userLocation.longitude)|name:起点&destination=latlng:\(destCoor.latitude),\(destCoor.longitude)|name:终点&mode=driving&region=\(model.cityName)&output=html&src=screson|YDHYK"
+            let navURL: URL = URL.init(string: mapURL.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(navURL, options: [UIApplicationOpenURLOptionUniversalLinksOnly:""], completionHandler: { (succ) in
+                })
+            } else {
+                UIApplication.shared.openURL(navURL)
+            }
+        }
+    }
+    
+    //MARK: - 电话
+    func call(_ model: ZXSearchModel) {
+        if model.tel.count != 0 {
+            ZXCommonUtils.call(model.tel, failed: { (errMsg) in
+                ZXAlertUtils.showAlert(wihtTitle:"提示" , message: "该设备不支持拨打电话功能", buttonText: "知道了", action: nil)
+            })
+        }else{
+            ZXHUD.showFailure(in: self.view, text: "无相关联系方式", delay: ZX.HUDDelay)
+        }
+    }
+    
+    //MARK: - 加入会员
+    func joinMember(_ model: ZXSearchModel) {
+        if model.isMember == 0 {
+            ZXJoinLeadViewController.checkShow(completion: {
+                self.navigationController?.pushViewController(ZXQRCodeScanViewController(), animated: true)
+            })
+        }
+    }
+    
+    //MARK: - 购药
+    func buy(_ model: ZXSearchModel) {
+        if model.isMember == 1 {
+            let storeVC = ZXStoreRootViewController.configVC(storeId: "\(model.storeId)", memberId: ZXUser.user.memberId, token: ZXUser.user.userToken)
+            self.navigationController?.pushViewController(storeVC, animated: true)
+        }
+    }
+}

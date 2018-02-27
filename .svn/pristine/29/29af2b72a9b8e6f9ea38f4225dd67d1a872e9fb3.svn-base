@@ -1,0 +1,430 @@
+//
+//  ZXNearbyStoreViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/8.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXNearbyStoreViewController: ZXUIViewController {
+    struct BtnTag {
+        static let all      = 2201
+        static let region   = 2202
+        static let distance = 2203
+    }
+    
+    struct DisType {
+        static let distance = "距离优先"
+        static let member   = "会员优先"
+    }
+    
+    /** 顶部视图*/
+    @IBOutlet weak var topView: UIView!
+    /** tableView*/
+    @IBOutlet weak var tableView: UITableView!
+    /**  全部 */
+    @IBOutlet weak var allBtn: UIButton!
+    /**  范围不限 */
+    @IBOutlet weak var regionBtn: UIButton!
+    /**  距离优先 */
+    @IBOutlet weak var disBtn: UIButton!
+    /** 页数*/
+    var pageIndex: Int = 0
+    /** 筛选字段*/
+    var allSql: NSString = ""
+    var regSql: NSString = ""
+    var disSql: NSString = ""
+    var sql: NSString    = ""
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.hidesBottomBarWhenPushed = false
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.backgroundColor = UIColor.zx_subTintColor
+        self.tableView.backgroundColor = UIColor.zx_subTintColor
+        
+        pageIndex = 1
+        
+        //
+        self.addSearchView()
+
+        // Nav
+        self.zx_addNavBarButtonItems(textNames: ["关闭"], font: nil, color: nil, at: .left)
+        self.zx_addNavBarButtonItems(textNames: ["地图"], font: nil, color: nil, at: .right)
+        
+        //tableView
+        self.tableView.register(UINib.init(nibName: String.init(describing: ZXStoreListCell.self), bundle: nil), forCellReuseIdentifier: ZXStoreListCell.ZXStoreListCellID)
+        
+        //刷新
+        self.addRefresh()
+        
+        //获取本地数据
+        self.tempArray.removeAllObjects()
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        let array = self.sorted(ZXSearchModel.findAll())
+        self.tempArray.addObjects(from:array)
+        self.loadData(array)
+        
+        //加入会员成功通知
+        NotificationCenter.default.addObserver(self, selector: #selector(monitorJoinMemberSuccess(_:)), name: NSNotification.Name(rawValue: ZXNotification.Member.joinSuccess), object: nil)
+    }
+    
+    //MARK: - Nav
+    override func zx_leftBarButtonAction(index: Int) {
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    //MARK: - 加入会员成功通知
+    @objc func monitorJoinMemberSuccess(_ obj: Notification){
+        ZXNearbyController.joinMemberSuccess(obj) { (_ model: ZXSearchModel) in
+            for mod in self.dataModelArray {
+                let mode = mod as! ZXSearchModel
+                if mode.storeId == model.storeId {
+                    mode.isMember = 1
+                }
+            }
+            self.tableView.reloadData()
+        }
+    }
+    
+    //MARK: SearchView
+    func addSearchView() {
+        self.navigationItem.titleView = self.searchBtn
+    }
+    
+    @objc func searchBtnAction() {
+        self.navigationController?.pushViewController(ZXSearchViewController(), animated: true)
+    }
+    
+    @IBAction func screenBtnAction(_ sender: UIButton) {
+        
+        if sender.isSelected {
+            self.allBtn.isSelected = false
+            self.regionBtn.isSelected = false
+            self.disBtn.isSelected = false
+            self.screenView.removeFromSuperview()
+            return
+        }
+        
+        sender.isSelected = !sender.isSelected
+        switch sender.tag {
+        case BtnTag.all:
+            self.regionBtn.isSelected = false
+            self.disBtn.isSelected = false
+        case BtnTag.region:
+            self.allBtn.isSelected = false
+            self.disBtn.isSelected = false
+        case BtnTag.distance:
+            self.regionBtn.isSelected = false
+            self.allBtn.isSelected = false
+        default:
+            break
+        }
+        self.screenView.removeFromSuperview()
+        self.screenView = ZXScreeningView.init()
+        self.screenView.delegate = self
+        //self.screenView.show()
+        self.view.addSubview(self.screenView)
+        self.screenView.loadData(type:sender.tag)
+        self.screenView.setDefault((sender.titleLabel?.text)!)
+    }
+    
+    
+    //MARK: - 刷新功能
+    func addRefresh() {
+        self.tableView.zx_addFooterRefresh(autoRefresh: true, target: self, action: #selector(refreshData))
+    }
+
+    @objc func refreshData() {
+        self.tableView.mj_footer.endRefreshing()
+        var refreshArray: Array<Any> = Array.init()
+        if self.allSearchArray.count % ZX.PageSize == 0 {
+            if self.allSearchArray.count <= ZX.PageSize {
+                self.tableView.mj_footer.endRefreshing()
+            }else{
+//                refreshArray = self.allSearchArray.subarray(with: NSMakeRange(self.pageIndex*ZX.PageSize, ZX.PageSize)) as NSArray
+                refreshArray = Array(self.allSearchArray[self.pageIndex*ZX.PageSize..<ZX.PageSize])
+                if self.pageIndex <= self.allSearchArray.count / ZX.PageSize {
+                    self.pageIndex += 1
+                }else{
+                    self.tableView.mj_footer.endRefreshing()
+                }
+            }
+        }else{
+            if self.pageIndex <= self.allSearchArray.count / ZX.PageSize {
+                if self.pageIndex == self.allSearchArray.count / ZX.PageSize {
+//                    refreshArray = self.allSearchArray.subarray(with: NSMakeRange(self.pageIndex*ZX.PageSize, self.allSearchArray.count % 10)) as NSArray
+                    refreshArray = Array(self.allSearchArray[self.pageIndex*ZX.PageSize..<self.allSearchArray.count % ZX.PageSize])
+                }else{
+//                    refreshArray = self.allSearchArray.subarray(with: NSMakeRange(self.pageIndex*ZX.PageSize, ZX.PageSize)) as NSArray
+                    refreshArray = Array(self.allSearchArray[self.pageIndex*ZX.PageSize..<ZX.PageSize])
+                }
+                self.pageIndex += 1
+            }else{
+                self.tableView.mj_footer.endRefreshing()
+            }
+        }
+        
+        self.dataModelArray.addObjects(from: refreshArray)
+        
+        self.tableView.reloadData()
+    }
+    
+    //MARK: - 刷新数据
+    func loadData(_ searchArr: Array<Any>) {
+        ZXHUD.hide(for: self.view, animated: true)
+        ZXHUD.hide(for: self.tableView, animated: true)
+        ZXEmptyView.hide(from: self.view)
+        ZXEmptyView.hide(from: self.tableView)
+        self.tableView.mj_footer.endRefreshing()
+        self.tableView.mj_footer.resetNoMoreData()
+        
+        self.dataModelArray.removeAllObjects()
+        
+        if searchArr.count != 0 {
+            self.allSearchArray = searchArr
+            let array: Array<Any>?
+            if self.allSearchArray.count < ZX.PageSize {
+                array = Array(self.allSearchArray[0..<self.allSearchArray.count])
+            }else{
+                array = Array(self.allSearchArray[0..<ZX.PageSize])
+            }
+            if array?.count != 0 {
+                self.dataModelArray.addObjects(from: array!)
+                if self.dataModelArray.count < ZX.PageSize {
+                    self.tableView.mj_footer.endRefreshingWithNoMoreData()
+                }
+            }else{
+                self.tableView.mj_footer.endRefreshingWithNoMoreData()
+                ZXEmptyView.show(in: self.tableView, type: .noData, text: "暂无数据", retry: {
+                })
+            }
+        }else{
+            self.tableView.mj_footer.endRefreshingWithNoMoreData()
+            ZXEmptyView.show(in: self.tableView, type: .noData, text: "暂无数据", retry: {
+                
+            })
+        }
+        self.tableView.reloadData()
+    }
+    
+    //MARK: - 筛选会员
+    func sortMember(_ memberArr: NSMutableArray) -> NSArray {
+        var resultArray: NSArray?
+        let mArray: NSMutableArray = NSMutableArray.init(capacity: 5)
+        memberArr.enumerateObjects { (_ objec: Any, _ index: Int, _ stop:UnsafeMutablePointer<ObjCBool>) in
+            if (objec as? ZXSearchModel) != nil {
+                let model: ZXSearchModel = objec as! ZXSearchModel
+                if model.isMember == 1 {
+                    mArray.add(model)
+                }
+            }
+        }
+        resultArray = self.sort(memberArr, mArray)
+        return resultArray!
+    }
+    
+    //MARK: - 排序
+    func sort(_ allArray: NSMutableArray,_ resutArray: NSMutableArray) -> NSMutableArray {
+        resutArray.enumerateObjects { (_ objc1: Any, _ index1: Int, _ stop1:UnsafeMutablePointer<ObjCBool>) in
+            if (objc1 as? ZXSearchModel) != nil {
+                let model1: ZXSearchModel = objc1 as! ZXSearchModel
+                allArray.enumerateObjects({ (_ objc2: Any, _ index2: Int, _ stop2:UnsafeMutablePointer<ObjCBool>) in
+                    if (objc2 as? ZXSearchModel) != nil {
+                        let model2: ZXSearchModel = objc2 as! ZXSearchModel
+                        if model1.storeId == model2.storeId {
+                            allArray.remove(objc2)
+                            stop1[0] = true
+                            stop2[0] = true
+                        }
+                    }
+                })
+            }
+        }
+        
+        for model in resutArray.reversed() {
+            allArray.insert(model, at: 0)
+        }
+        return allArray
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    //MARK: - Lazy
+    lazy var searchBtn: UIButton = {
+        let btn: UIButton = UIButton.init(type: .custom)
+        btn.frame = CGRect.init(x: 0, y: 0, width: 290, height: 30)
+        btn.backgroundColor = UIColor.white
+        btn.setImage(#imageLiteral(resourceName: "icon-search"), for: .normal)
+        btn.setTitle(" 搜索药店、医馆", for: .normal)
+        btn.setTitleColor(UIColor.zx_textColorMark, for: .normal)
+        btn.titleLabel?.font = UIFont.zx_bodyFont(UIFont.zx_bodyFontSize - 2)
+        btn.layer.cornerRadius = 5.0
+        btn.layer.masksToBounds = true
+        btn.addTarget(self, action: #selector(searchBtnAction), for: .touchUpInside)
+        return btn
+    }()
+    
+    lazy var dataModelArray: NSMutableArray = {
+        let arr:NSMutableArray = NSMutableArray.init(capacity: ZX.PageSize)
+        return arr
+    }()
+    
+    lazy var tempArray: NSMutableArray = {
+        let arr:NSMutableArray = NSMutableArray.init(capacity: ZX.PageSize)
+        return arr
+    }()
+    
+    var allSearchArray: Array<Any> = {
+        let arr:Array<Any> = Array.init()
+        return arr
+    }()
+    
+    var screenView: ZXScreeningView = {
+        let view: ZXScreeningView = ZXScreeningView()
+        return view
+    }()
+}
+
+extension ZXNearbyStoreViewController: ZXScreeningViewDelegate {
+    func didZXScreeningViewItem(_ str: String,_ btnTag: Int,_ typeArr: NSMutableArray) {
+        //
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+
+        //
+        self.sql = ""
+        self.pageIndex = 1
+        
+        //
+        switch btnTag {
+        case BtnTag.all:
+            self.allBtn.setTitle(str, for: .normal)
+            if typeArr.count == 3, str == typeArr[1] as! String {
+                self.allSql = "isChineseMedicine = '1'"
+            }else if str == typeArr[2] as! String {
+                self.allSql = "isChineseMedicine = '0'"
+            }else{
+                self.allSql = ""
+            }
+        case BtnTag.region:
+            self.regionBtn.setTitle(str, for: .normal)
+            var regionStr: String = ""
+            if typeArr.count == 5, str == typeArr[0] as! String {
+                regionStr = ""
+            }else if str == typeArr[1] as! String {
+                regionStr = "0.5"
+            }else if str == typeArr[2] as! String {
+                regionStr = "1.0"
+            }else if str == typeArr[3] as! String {
+                regionStr = "3.0"
+            }else if str == typeArr[4] as! String {
+                regionStr = "5.0"
+            }
+            
+            self.regSql = NSString.init(format:"distanceF < '%@'",regionStr)
+            
+        case BtnTag.distance:
+            self.disBtn.setTitle(str, for: .normal)
+            if typeArr.count == 2, str == typeArr[1] as! String {
+                self.disSql = "isMember = '1'"
+            }else{
+                self.disSql = ""
+            }
+        default:
+            break
+        }
+        
+        //
+        var searchArray: Array<Any> = Array()
+        self.tempArray.removeAllObjects()
+        
+        if self.allSql.length == 0,self.regSql.length == 0,self.disSql.length == 0 {//筛选为空
+            searchArray = ZXSearchModel.findAll()
+            self.tempArray.addObjects(from: searchArray)
+        }else{//筛选不为空
+            if self.disSql.length == 0 {//没有选择“距离选项”
+                if self.allSql.length != 0 , self.regSql.length != 0 {
+                    self.sql = NSString.init(format:"WHERE %@ AND %@",self.allSql,self.regSql)
+                    searchArray = ZXSearchModel.find(byCriteria: self.sql as String!)
+                    self.tempArray.addObjects(from: searchArray)
+                }else if self.allSql.length != 0, self.regSql.length == 0 {
+                    self.sql = NSString.init(format:"WHERE %@",self.allSql)
+                    searchArray = ZXSearchModel.find(byCriteria: self.sql as String!)
+                    self.tempArray.addObjects(from: searchArray)
+                }else if self.allSql.length == 0, self.regSql.length != 0 {
+                    self.sql = NSString.init(format:"WHERE %@",self.regSql)
+                    searchArray = ZXSearchModel.find(byCriteria: self.sql as String!)
+                    searchArray = self.sorted(searchArray)
+                    self.tempArray.addObjects(from: searchArray)
+                }else{
+                    searchArray = ZXSearchModel.findAll()
+                    self.tempArray.addObjects(from: searchArray)
+                }
+            }else if self.disSql.length != 0 {//距离选项不为空
+                if self.allSql.length == 0 , self.regSql.length == 0 {
+                    if str == DisType.member {//会员优先
+                        searchArray = ZXSearchModel.findAll()
+                        self.tempArray.addObjects(from: searchArray)
+                        searchArray = self.sortMember(self.tempArray) as! Array<Any>
+                    }else{
+                        searchArray = self.tempArray as! Array<Any>
+                    }
+                }else if self.allSql.length == 0,self.regSql.length != 0 {//范围
+                    self.sql = NSString.init(format:"WHERE %@",self.regSql)
+                    searchArray = ZXSearchModel.find(byCriteria: self.sql as String!)
+                    self.tempArray.addObjects(from: searchArray)
+                    if str == DisType.member {
+                        searchArray = self.sortMember(self.tempArray) as! Array<Any>
+                    }
+                }else if self.allSql.length != 0, self.regSql.length == 0 {//全部
+                    self.sql = NSString.init(format:"WHERE %@",self.allSql)
+                    searchArray = ZXSearchModel.find(byCriteria: self.sql as String!)
+                    self.tempArray.addObjects(from: searchArray)
+                    if str == DisType.member {
+                        searchArray = self.sortMember(self.tempArray) as! Array<Any>
+                    }
+                }else if self.allSql.length != 0, self.regSql.length != 0  {//范围&& 全部
+                    self.sql = NSString.init(format:"WHERE %@ AND %@",self.allSql,self.regSql)
+                    searchArray = ZXSearchModel.find(byCriteria: self.sql as String!)
+                    self.tempArray.addObjects(from: searchArray)
+                    if str == DisType.member {
+                        searchArray = self.sortMember(self.tempArray) as! Array<Any>
+                    }
+                }
+            }
+        }
+        self.loadData(searchArray)
+    }
+    
+    //升序排序
+    func sorted(_ array: Array<Any>) -> Array<Any> {
+        let sortArray = array.sorted { (model1, model2) -> Bool in
+            let mod1 = model1 as! ZXSearchModel
+            let mod2 = model2 as! ZXSearchModel
+            return mod2.distance > mod1.distance
+        }
+        return sortArray
+    }
+    
+    func didRemoveSuperView() {
+        self.allBtn.isSelected = false
+        self.regionBtn.isSelected = false
+        self.disBtn.isSelected = false
+    }
+}

@@ -1,0 +1,148 @@
+//
+//  ZXRemindListCell.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/23.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXRemindListCell: UICollectionViewCell {
+    
+    static let ZXRemindListCellID: String = "ZXRemindListCell"
+    
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var backView: ZXUIView!
+    @IBOutlet weak var checkBtn: UIButton!
+    @IBOutlet weak var drugTimeLb: UILabel!
+    @IBOutlet weak var titleLb: UILabel!
+    @IBOutlet weak var titleW: NSLayoutConstraint!
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+        self.tableView.register(UINib.init(nibName: String.init(describing: ZXDrugListCell.self), bundle: nil), forCellReuseIdentifier: ZXDrugListCell.ZXDrugListCellID)
+        
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+    }
+    
+    func loadData(_ dict: Dictionary<String,Any>) {
+        self.dataDict = dict
+        
+        self.dataSource.removeAll()
+        
+        let key: String = dict.keys.first!
+        let arr: Array<Any> = dict[key] as! Array<Any>
+        self.dataSource = arr
+        
+        self.drugTimeLb.text = key
+        
+        self.tableView.reloadData()
+    }
+    
+    //MARK: - 查看详情
+    @IBAction func checkDetailBtnAction(_ sender: ZXUIButton) {
+        let detailView: ZXDrugDetailView = ZXDrugDetailView.loadNib()
+        ZXRootController.appWindow()?.addSubview(detailView)
+        detailView.loadData(self.dataDict,true)
+    }
+    
+    //MARK: - 修改时间
+    @IBAction func modifyTimeBtnAction(_ sender: ZXTitleButton) {
+        
+        //转为Modle
+        let currentData: String = ZXDateUtils.current.date(false)
+        let model: ZXAddTimeModel = ZXAddTimeModel()
+        model.drugTime = "\(currentData) \(self.drugTimeLb.text!):00"
+        model.addQty = ""
+        
+        //1. 显示
+        let dateView: ZXDataView = ZXDataView.loadNib()
+        ZXRootController.appWindow()?.addSubview(dateView)
+        dateView.loadDateUIWithType(.Cancel, "修改用药时间", "取消", model)
+        
+        //2. 取出id
+        var idsArr: Array<String> = Array()
+        for model in self.dataSource {
+            if let model = model as? ZXRemindModel {
+                idsArr.append("\(model.detailId)")
+            }
+        }
+        let idsStr: String = idsArr.joined(separator: ",")
+        
+        //3.获得时间
+        dateView.completion = { dateStr,dateType,dateModel in
+            self.requestForModifyTime(idsStr, dateStr)
+            dateView.removeFromSuperview()
+        }
+    }
+    
+    //MARK: - Lazy
+    lazy var dataSource: Array<Any> = {
+        let array: Array<Any> = Array.init()
+        return array
+    }()
+    
+    lazy var dataDict: Dictionary<String,Any> = {
+        let dict: Dictionary<String,Any> = Dictionary()
+        return dict
+    }()
+}
+
+extension ZXRemindListCell: UITableViewDelegate {
+    
+}
+
+extension ZXRemindListCell: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell: ZXDrugListCell = tableView.dequeueReusableCell(withIdentifier: ZXDrugListCell.ZXDrugListCellID, for: indexPath) as! ZXDrugListCell
+        if indexPath.row > 4 {
+            cell.nameLb.text = "......"
+            cell.countLb.text = ""
+        }else{
+            if self.dataSource.count > 0 {
+                cell.loadData(self.dataSource[indexPath.row] as! ZXRemindModel)
+            }
+        }
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.dataSource.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        var rowH:CGFloat = 0.0
+        if indexPath.row >= 4 {
+            rowH = 8.0
+        }else{
+            rowH = 28.0
+        }
+        return rowH
+    }
+}
+
+extension ZXRemindListCell {
+    func requestForModifyTime(_ ids:String,_ dateStr: String) {
+        
+        ZXHUD.showLoading(in: ZXRootController.appWindow()!, text: ZX_LOADING_TEXT, delay: nil)
+         ZXRemindController.requestForModifyDrugTime(["detailIds":ids,"remindTime":dateStr]) { (succ, code, dataList, errMsg) in
+            ZXHUD.hide(for: ZXRootController.appWindow()!, animated: true)
+            if succ {
+                ZXHUD.showSuccess(in: ZXRootController.appWindow()!, text: "上传成功", delay: ZX.HUDDelay)
+                
+                //通知刷新已添加提醒及按时间查询
+                NotificationCenter.default.post(name: ZXNotification.Remind.ModifyTime.zx_noticeName(), object: nil)
+                
+            }else{
+                ZXHUD.showFailure(in: ZXRootController.appWindow()!, text: errMsg, delay: ZX.HUDDelay)
+            }
+        }
+    }
+}

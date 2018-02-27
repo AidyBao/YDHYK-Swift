@@ -1,0 +1,174 @@
+//
+//  ZXReportDetailViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/21.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+
+/// 化验单详情
+class ZXReportDetailViewController: ZXUIViewController {
+
+    var reportId: String?
+    
+    @IBOutlet weak var btnReviewImage: ZXUIButton!
+    @IBOutlet weak var imgSnap: UIImageView!
+    @IBOutlet weak var tblList: UITableView!
+    @IBOutlet weak var btnReviewResult: ZXUIButton!
+    
+    var itemList: Array<ZXCheckItemShortModel> = []
+    var patient: ZXPatientInfo?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "分析记录详情"
+        if self.reportId != nil {
+            self.zx_addNavBarButtonItems(textNames: ["删除"], font: nil, color: nil, at: .right)
+        }
+        self.imgSnap.backgroundColor = UIColor.zx_borderColor
+        
+        
+        self.tblList.register(UINib.init(nibName: ZXReportDetailHeaderCell.NibName, bundle: nil), forCellReuseIdentifier: ZXReportDetailHeaderCell.reuseIdentifier)
+        self.tblList.register(UINib.init(nibName: ZXReportDetailCell.NibName, bundle: nil), forCellReuseIdentifier: ZXReportDetailCell.reuseIdentifier)
+        self.tblList.register(UINib.init(nibName: ZXReportDetailAgeSexCell.NibName, bundle: nil), forCellReuseIdentifier: ZXReportDetailAgeSexCell.reuseIdentifier)
+        
+        self.tblList.backgroundColor = UIColor.zx_subTintColor
+        self.tblList.separatorColor = UIColor.zx_borderColor
+        self.tblList.zx_addHeaderRefresh(showGif: true, target: self, action: #selector(zx_refresh))
+        
+        self.btnReviewImage.isHidden = true
+    }
+    
+    override func zx_refresh() {
+        self.loadDetail(showHUD: false)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !onceLoad {
+            onceLoad = true
+            self.loadDetail(showHUD: true)
+        }
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        if let reportId = reportId {
+            ZXAlertUtils.showAlert(wihtTitle: nil, message: "确定删除化验单及分析结果记录", buttonTexts: ["取消", "删除"], action: { (index) in
+                if index == 1 {
+                    ZXHUD.showLoading(in: self.view, text: "删除中...", delay: 0)
+                    ZXReportAnalyseViewModel.deleteReport(reportId: reportId, completion: { (success, code, errorMsg) in
+                        if success {
+                            NotificationCenter.zxpost.reportDeleted()
+                            self.navigationController?.popViewController(animated: true)
+                        } else {
+                            ZXHUD.showFailure(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                        }
+                    })
+                }
+            })
+        }
+    }
+    
+    func loadDetail(showHUD: Bool) {
+        if let reportId = reportId {
+            if showHUD {
+                ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+            }
+            ZXReportAnalyseViewModel.reportDetail(reportId: reportId) { (success, code, itemList, patient, errorMsg) in
+                ZXHUD.hide(for: self.view, animated: true)
+                self.tblList.mj_header.endRefreshing()
+                if success {
+                    self.itemList = itemList ?? []
+                    self.patient = patient
+                    self.reloadUI()
+                } else {
+                    if code != ZXAPI_LOGIN_INVALID {
+                        ZXHUD.showLoading(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                    }
+                }
+            }
+        } else {
+            ZXHUD.showFailure(in: self.view, text: "化验单ID为空", delay: ZX.HUDDelay)
+        }
+    }
+    
+    func reloadUI() {
+        self.btnReviewImage.isHidden = false
+        if let patient = self.patient {
+            if !patient.imgStr.isEmpty {
+                self.btnReviewImage.setTitle("查看图片", for: .normal)
+                self.imgSnap.kf.setImage(with: URL.init(string: patient.imgStr))
+            } else {
+                self.btnReviewImage.setTitle("无图片", for: .normal)
+                self.imgSnap.image = nil
+            }
+        }
+        self.tblList.reloadData()
+    }
+    
+    //查看原图
+    @IBAction func reviewImage(_ sender: Any) {
+        if let patient = self.patient,!patient.imgStr.isEmpty {
+            
+        }
+    }
+    
+    @IBAction func reviewResutl(_ sender: Any) {
+        if let patient = patient {
+            let resultVC = ZXAnalyseResultViewController()
+            resultVC.reportId = self.reportId
+            resultVC.isAbnormal = (patient.isAbnormal == 1 ? true : false)
+            self.navigationController?.pushViewController(resultVC, animated: true)
+        } else {
+            ZXHUD.showFailure(in: self.view , text: "无相关数据", delay: ZX.HUDDelay)
+        }
+    }
+}
+
+extension ZXReportDetailViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 10
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 10
+    }
+}
+
+extension ZXReportDetailViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if self.itemList.count > 0 {
+            if (section == 0) {//性别 年龄
+                return 1;
+            } else {//标题 + 检查项
+                return itemList.count + 1;
+            }
+        }
+        return 0
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if indexPath.section == 0 {//性别 年龄
+            let cell = tableView.dequeueReusableCell(withIdentifier: ZXReportDetailAgeSexCell.reuseIdentifier, for: indexPath) as! ZXReportDetailAgeSexCell
+            cell.reloaData(patient: self.patient)
+            return cell
+        } else {
+            if indexPath.row == 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: ZXReportDetailHeaderCell.reuseIdentifier, for: indexPath) as! ZXReportDetailHeaderCell
+                return cell
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: ZXReportDetailCell.reuseIdentifier, for: indexPath) as! ZXReportDetailCell
+                cell.reloadData(model: self.itemList[indexPath.row - 1])
+                return cell
+            }
+        }
+     }
+}

@@ -1,0 +1,75 @@
+//
+//  ZXSearchViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/8.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXSearchViewController: ZXUIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+    }
+    
+    func setUIStyle() {
+        //Nav
+        self.navigationItem.setHidesBackButton(true, animated: true)
+        self.navigationItem.titleView = self.searchField
+        
+        self.zx_addNavBarButtonItems(textNames: ["取消"], font: nil, color: nil, at: .left)
+        
+    }
+    
+    override func zx_leftBarButtonAction(index: Int) {
+        
+    }
+
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+
+    //lazy var searchField:UITextField = {
+    var searchField:UITextField = {
+        //
+        let searchImg:UIImage = #imageLiteral(resourceName: "search")
+        let leftImgV:UIImageView = UIImageView.init(image: searchImg)
+        leftImgV.frame = CGRect.init(x: 30, y: 0, width: searchImg.size.width + 5, height: searchImg.size.height)
+        leftImgV.contentMode = UIViewContentMode.right
+        
+        //
+        let placeHoderlStr: String = "请输入商品名字"
+        let search = UITextField.init()
+        //search.delegate = self
+        search.frame = CGRect.init(x: 0, y: 0, width: ZX_BOUNDS_WIDTH - 80, height: 22)
+        search.tintColor = UIColor.white.withAlphaComponent(0.6)
+        search.leftViewMode = UITextFieldViewMode.always
+        search.borderStyle = .none
+        search.backgroundColor = UIColor.zx_colorRGB(60, 60, 209, 1.0)
+        search.clearButtonMode = UITextFieldViewMode.whileEditing
+        search.layer.cornerRadius = 11
+        search.layer.masksToBounds = true
+        
+        search.leftView = leftImgV
+        search.font = UIFont.zx_bodyFont(UIFont.zx_bodyFontSize - 2)
+        search.textColor = UIColor.white
+        search.returnKeyType = UIReturnKeyType.search
+        search.enablesReturnKeyAutomatically = true//设置无文本为灰色
+        
+        if #available(iOS 9.0, *) {
+            let attrStr = NSAttributedString.init(string: placeHoderlStr, attributes: [NSAttributedStringKey.font:UIFont.zx_bodyFont(UIFont.zx_bodyFontSize - 2),NSAttributedStringKey.foregroundColor:UIColor.white.withAlphaComponent(0.6)])
+            search.attributedPlaceholder = attrStr
+        }else {
+            search.placeholder = placeHoderlStr
+        }
+        return search
+    }()
+}
+

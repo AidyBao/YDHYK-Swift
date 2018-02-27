@@ -1,0 +1,56 @@
+//
+//  ZXAddNewReport+SeachAction.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/23.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+extension ZXAddNewReportAnalyseViewController: ZXItemSearchDelegate {
+    func zxItemSearchListSelectButtonAction() {
+        let itemListVc = ZXItemListSelectViewController()
+        itemListVc.checkEnd = { list in
+            for item in list {
+                if !self.hasAddedItem(item) {
+                    if let model = ZXCheckItemDetailModel.mj_object(withKeyValues: item.mj_keyValues()) {
+                        self.addedItemList.insert(model, at: 0)
+                    }
+                }
+            }
+            self.tblReportItem.reloadData()
+        }
+        self.navigationController?.pushViewController(itemListVc, animated: true)
+    }
+    
+    func zxItemSearchAddButtonAction() {//点击添加按钮
+        if self.searchList.count > 0,searchListIndex != -1 {
+            let model = self.searchList[searchListIndex]
+            if !self.hasAddedItem(model) {
+                self.view.endEditing(true)
+                self.txtSearch.text = ""
+                self.btnAdd.isEnabled = false
+                if let model = ZXCheckItemDetailModel.mj_object(withKeyValues: model.mj_keyValues()) {
+                    self.addedItemList.insert(model, at: 0)
+                }
+                self.tblReportItem.reloadData()
+                searchListIndex = -1
+                searchList.removeAll()
+                self.tblSerachResult.reloadData()
+            } else {
+                tblSerachResult.deselectRow(at: IndexPath.init(row: searchListIndex, section: 0), animated: true)
+                searchListIndex = -1
+                ZXHUD.showFailure(in: self.view, text: "该检查项目已存在", delay: ZX.HUDDelay)
+            }
+        }
+        
+    }
+    
+    func zxItemSearchResultChanged(result: Array<ZXCheckItemListModel>) {
+        self.searchList = result
+        self.searchListIndex = -1
+        self.tblSerachResult.reloadData()
+    }
+    
+}

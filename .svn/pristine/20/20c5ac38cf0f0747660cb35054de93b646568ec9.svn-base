@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ZXNearbyStoreViewController" customModule="YDHYK" customModuleProvider="target">
+            <connections>
+                <outlet property="allBtn" destination="FLa-68-zm6" id="9jk-vd-ASo"/>
+                <outlet property="disBtn" destination="Npi-97-8wg" id="h1M-5N-wSR"/>
+                <outlet property="regionBtn" destination="NRS-hz-MgF" id="K6D-Xt-ONz"/>
+                <outlet property="tableView" destination="HH2-Eu-mWD" id="Qb4-dY-uca"/>
+                <outlet property="topView" destination="Vzb-1n-cOm" id="hQT-Jt-ccC"/>
+                <outlet property="view" destination="e5M-bo-Ae9" id="NMg-dg-xDA"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="e5M-bo-Ae9">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vzb-1n-cOm">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                    <subviews>
+                        <button opaque="NO" tag="2201" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FLa-68-zm6" customClass="ZXBButton" customModule="YDHYK" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="125" height="44"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <state key="normal" title="全部" image="icon-more">
+                                <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <state key="selected" image="icon-shou">
+                                <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <connections>
+                                <action selector="screenBtnAction:" destination="-1" eventType="touchUpInside" id="fFO-iR-pqb"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" tag="2202" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NRS-hz-MgF" customClass="ZXBButton" customModule="YDHYK" customModuleProvider="target">
+                            <rect key="frame" x="125" y="0.0" width="125" height="44"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                            <state key="normal" title="范围不限" image="icon-more">
+                                <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <state key="selected" image="icon-shou">
+                                <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <connections>
+                                <action selector="screenBtnAction:" destination="-1" eventType="touchUpInside" id="Dqc-6f-MlZ"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" tag="2203" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Npi-97-8wg" customClass="ZXBButton" customModule="YDHYK" customModuleProvider="target">
+                            <rect key="frame" x="250" y="0.0" width="125" height="44"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                            <state key="normal" title="距离优先" image="icon-more">
+                                <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <state key="selected" image="icon-shou">
+                                <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <connections>
+                                <action selector="screenBtnAction:" destination="-1" eventType="touchUpInside" id="PBL-wl-w8g"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="NRS-hz-MgF" secondAttribute="bottom" id="2U3-zC-jfy"/>
+                        <constraint firstItem="Npi-97-8wg" firstAttribute="top" secondItem="Vzb-1n-cOm" secondAttribute="top" id="Gcr-aQ-q7i"/>
+                        <constraint firstItem="NRS-hz-MgF" firstAttribute="top" secondItem="Vzb-1n-cOm" secondAttribute="top" id="J7O-HE-7RZ"/>
+                        <constraint firstItem="NRS-hz-MgF" firstAttribute="width" secondItem="FLa-68-zm6" secondAttribute="width" id="K9Y-sh-DjS"/>
+                        <constraint firstAttribute="height" constant="44" id="PAn-Ty-Erw"/>
+                        <constraint firstItem="FLa-68-zm6" firstAttribute="leading" secondItem="Vzb-1n-cOm" secondAttribute="leading" id="WYD-t1-Wc8"/>
+                        <constraint firstItem="Npi-97-8wg" firstAttribute="leading" secondItem="NRS-hz-MgF" secondAttribute="trailing" id="ZGE-bo-46D"/>
+                        <constraint firstItem="NRS-hz-MgF" firstAttribute="height" secondItem="FLa-68-zm6" secondAttribute="height" id="fWE-JV-Ue7"/>
+                        <constraint firstAttribute="bottom" secondItem="Npi-97-8wg" secondAttribute="bottom" id="gUW-rU-wKn"/>
+                        <constraint firstItem="NRS-hz-MgF" firstAttribute="leading" secondItem="FLa-68-zm6" secondAttribute="trailing" id="jp5-gZ-E03"/>
+                        <constraint firstAttribute="bottom" secondItem="FLa-68-zm6" secondAttribute="bottom" id="mdr-jF-Y1o"/>
+                        <constraint firstItem="Npi-97-8wg" firstAttribute="width" secondItem="FLa-68-zm6" secondAttribute="width" id="n2Y-kK-d86"/>
+                        <constraint firstAttribute="trailing" secondItem="Npi-97-8wg" secondAttribute="trailing" id="v5p-oI-gMQ"/>
+                        <constraint firstItem="Npi-97-8wg" firstAttribute="height" secondItem="FLa-68-zm6" secondAttribute="height" id="vZO-mX-Bo1"/>
+                        <constraint firstItem="FLa-68-zm6" firstAttribute="top" secondItem="Vzb-1n-cOm" secondAttribute="top" id="zT1-6b-NJq"/>
+                    </constraints>
+                </view>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="HH2-Eu-mWD">
+                    <rect key="frame" x="0.0" y="44" width="375" height="623"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                </tableView>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="HH2-Eu-mWD" firstAttribute="top" secondItem="Vzb-1n-cOm" secondAttribute="bottom" id="7su-qS-GQN"/>
+                <constraint firstItem="Vzb-1n-cOm" firstAttribute="leading" secondItem="e5M-bo-Ae9" secondAttribute="leading" id="93v-IO-Aoz"/>
+                <constraint firstItem="HH2-Eu-mWD" firstAttribute="leading" secondItem="e5M-bo-Ae9" secondAttribute="leading" id="aPH-kn-H24"/>
+                <constraint firstItem="HH2-Eu-mWD" firstAttribute="trailing" secondItem="e5M-bo-Ae9" secondAttribute="trailing" id="cgL-hr-Ozv"/>
+                <constraint firstItem="Vzb-1n-cOm" firstAttribute="top" secondItem="e5M-bo-Ae9" secondAttribute="top" id="rdv-CE-d5d"/>
+                <constraint firstItem="HH2-Eu-mWD" firstAttribute="bottom" secondItem="e5M-bo-Ae9" secondAttribute="bottom" id="udv-cV-kS3"/>
+                <constraint firstAttribute="trailing" secondItem="Vzb-1n-cOm" secondAttribute="trailing" id="xUu-zW-dMW"/>
+            </constraints>
+            <point key="canvasLocation" x="-273.5" y="-549.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icon-more" width="9" height="5"/>
+        <image name="icon-shou" width="9" height="5"/>
+    </resources>
+</document>

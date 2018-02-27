@@ -1,0 +1,26 @@
+//
+//  ZXPrescriptionViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/6.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+
+/// 新增处方列表
+class ZXPrescriptionViewController: ZXUIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "处方"
+        // Do any additional setup after loading the view.
+        self.zx_addNavBarButtonItems(imageNames: ["h_nav_add"], useOriginalColor: false, at: .right)
+        ZXEmptyView.show(in: self.view, type: .noData, text: "您还没有处方记录,可点击右上角+号添加保存")
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        
+    }
+}

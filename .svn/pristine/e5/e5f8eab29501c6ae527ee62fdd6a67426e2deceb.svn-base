@@ -1,0 +1,373 @@
+//
+//  ZXLoginRootViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/1.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+//MARK: -
+let Login_UserName_MaxLenth = 11
+let Login_Password_MinLenth = 6
+let Login_Password_MaxLenth = 6
+
+class ZXLoginRootViewController: UIViewController {
+    
+    @IBOutlet weak var telLb: UILabel!
+    @IBOutlet weak var codeLb: UILabel!
+    
+    @IBOutlet weak var telText: UITextField!
+    @IBOutlet weak var codeText: UITextField!
+    
+    @IBOutlet weak var getCodeBtn: ZXCountDownButton!
+    @IBOutlet weak var loginBtn: ZXLoginButton!
+    
+    @IBOutlet weak var bigBackView: UIView!
+    @IBOutlet weak var scrollView: UIScrollView!
+
+    @IBOutlet weak var logImgView: UIImageView!
+
+    var logonInvalid: Bool = false  //处理登录失效
+    var lastLoginID: String = ""    //上次登录账号
+    
+    var lastTelNum: String = ""
+    var code: String = ""
+    var isNew: Int = -1
+    var isGettingPhoneCode: Bool = false
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        //加载动画
+        self.loadingAnimaImages()
+        
+        //
+        self.initWithUIStyle()
+        
+        //
+        self.addKeyBoardObsever()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        NotificationCenter.default.addObserver(self, selector: #selector(zxTextFieldValueChange(_:)), name: NSNotification.Name.UITextFieldTextDidChange, object: nil)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UITextFieldTextDidChange, object: nil)
+    }
+    
+    fileprivate func setCommitButton(_ enable:Bool) {
+        if enable {
+            self.loginBtn.isEnabled = true
+        } else {
+            self.loginBtn.isEnabled = false
+        }
+    }
+    
+    @objc func zxTextFieldValueChange(_ notice: Notification) {
+        if (notice.object as? UITextField) != nil {
+            let bTel = !(self.telText.text ?? "").isEmpty
+            let bCode = !(self.codeText.text ?? "").isEmpty
+            if bTel,bCode,self.telText.text?.count == 11 {
+                self.setCommitButton(true)
+            } else {
+                self.setCommitButton(false)
+            }
+            
+            if let tel = self.telText.text,tel.count == 11,!self.getCodeBtn.isCouting {
+                self.getCodeBtn.isEnabled = true
+            } else {
+                self.getCodeBtn.isEnabled = false
+            }
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UITextFieldTextDidChange, object: nil)
+        NotificationCenter.default.removeObserver(self, name: ZXNotification.UI.enterForeground.zx_noticeName(), object: nil)
+    }
+    
+    //MARK: - 初始化
+    func initWithUIStyle() -> Void {
+
+        //UI
+        self.telLb.font = UIFont.zx_bodyFont
+        self.telLb.textColor = UIColor.zx_textColorTitle
+        self.codeLb.font = UIFont.zx_bodyFont
+        self.codeLb.textColor = UIColor.zx_textColorTitle
+        
+        self.telText.textColor = UIColor.zx_textColorTitle
+        self.telText.font = UIFont.zx_bodyFont
+        self.codeText.textColor = UIColor.zx_textColorTitle
+        self.codeText.font = UIFont.zx_bodyFont
+        
+        self.getCodeBtn.setTitleColor(UIColor.zx_tintColor, for: .normal)
+        self.getCodeBtn.titleLabel?.font = UIFont.zx_bodyFont
+        self.getCodeBtn.isEnabled = false
+        
+        self.telText.clearButtonMode = UITextFieldViewMode.whileEditing
+        self.codeText.clearButtonMode = UITextFieldViewMode.whileEditing
+        
+        self.setCommitButton(false)
+       
+        self.telText.becomeFirstResponder()
+
+    }
+    
+    override func zx_refresh() {
+        if self.getCodeBtn.isCouting,ZXGlobalData.inoutCount > 0,self.getCodeBtn.currentCount > 0 {
+            var temp = self.getCodeBtn.currentCount - ZXGlobalData.inoutCount
+            temp = temp < 0 ? 0 : temp
+            self.getCodeBtn.maxCount = temp
+            self.getCodeBtn.start()
+        }
+    }
+    
+    //MARK: - 加载动画
+    func loadingAnimaImages() -> Void {
+        var array:Array<UIImage> = Array()
+        for i in 1 ..< 54{
+            let img =  UIImage(named: String(format:"HYKLog-%zd",i))
+            if let img = img {
+                array.append(img)
+            }
+        }
+        
+        self.logImgView.animationImages = array
+        self.logImgView.animationDuration = 2.0
+        self.logImgView.animationRepeatCount = 1
+        self.logImgView.startAnimating()
+        
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.8, execute:{
+            self.logImgView.stopAnimating()
+            self.logImgView.image = UIImage(named: String(format:"HYKLog-%zd",54))
+        })
+    }
+    
+    //MARK: - 键盘通知
+    func addKeyBoardObsever() ->Void {
+        //
+        NotificationCenter.default.addObserver(self, selector: #selector(keyBoardWillShow(_:)), name:NSNotification.Name.UIKeyboardWillShow , object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyBoardWillHide(_:)), name: NSNotification.Name.UIKeyboardDidHide, object: nil)
+        //
+        let tap:UITapGestureRecognizer = UITapGestureRecognizer.init(target: self, action: #selector(resignTextFieldResponder))
+        self.bigBackView.addGestureRecognizer(tap)
+    }
+    
+    //键盘出现
+    @objc func keyBoardWillShow(_ notification: Notification){
+        let kbInfo = notification.userInfo
+        let kbRect = (kbInfo?[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        let kbHeight:CGFloat = kbRect.size.height
+        let screenHeight:CGFloat = UIScreen.main.bounds.size.height
+        let viewBottom:CGFloat = self.loginBtn.frame.maxY
+        
+        if viewBottom + kbHeight < screenHeight {
+            return
+        }
+        
+        let reheight:CGFloat = viewBottom + kbHeight - screenHeight + 5
+        
+        self.scrollView.setContentOffset(CGPoint.init(x: 0, y: reheight), animated: true)
+    }
+    
+    //键盘收起
+    @objc func keyBoardWillHide(_ notification: Notification){
+        self.scrollView.setContentOffset(CGPoint.init(x: 0, y: 0), animated: true)
+    }
+    
+    //手势
+    @objc func resignTextFieldResponder() ->Void {
+        self.view.endEditing(true)
+        self.telText.resignFirstResponder()
+        self.codeText.resignFirstResponder()
+    }
+
+    //MARK: - 用户协议
+    @IBAction func userAgreementAction(_ sender: UIButton) {
+        let webVC:ZXWebViewViewController = ZXWebViewViewController.init()
+        webVC.title = "药店云用户协议"
+        webVC.webUrl = String.init(format: "%@%@", ZXURLConst.Web.url,ZXURLConst.Web.serviceItems)
+        self.navigationController?.pushViewController(webVC, animated: true)
+    }
+    
+    //MARK: - 登录
+    @IBAction func loginBtnAction(_ sender: UIButton) {
+        self.view.endEditing(true)
+        self.telText .resignFirstResponder()
+        self.codeText .resignFirstResponder()
+        
+        //APP公共测试账号
+        if self.codeText.text == ZX.TestAccount.password ,
+            self.telText.text == ZX.TestAccount.account{
+            self.requestForLogin()
+        }else{
+            if self.codeText.text == self.code {
+                if self.telText.text == self.lastTelNum {
+                    self.requestForLogin()
+                }else{
+                    ZXHUD.showFailure(in: self.view, text: "手机号错误", delay: ZX.HUDDelay)
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: "验证码错误", delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    //MARK: - 获取验证码
+    @IBAction func getCodeAction(_ sender: UIButton) {
+        self.view.endEditing(true)
+        if self.telText.text?.count != 0 {
+            if (self.telText.text?.zx_mobileValid())! {
+                self.lastTelNum = self.telText.text!
+                self.requestForGetCode()
+            }else{
+                ZXHUD.showFailure(in: self.view, text: "请输入正确的手机号", delay: ZX.HUDDelay)
+            }
+        }else{
+             ZXHUD.showFailure(in: self.view, text: "请填写手机号", delay: ZX.HUDDelay)
+        }
+    }
+    
+    func requestForGetCode() {
+        var dict: Dictionary<String,Any> = Dictionary()
+        if self.telText.text?.count != 0 {
+            dict["tel"] = self.telText.text
+        }
+        ZXHUD.showLoading(in: self.view, text: "", delay: nil)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.User.getSMSCode), params: dict, method: .post) { (success, status, content, string, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if status == ZXAPI_SUCCESS {
+                if let codeStr = content["smsCode"] {
+                    ZXHUD.showSuccess(in: self.view, text: "验证码已发送", delay: ZX.HUDDelay)
+                    self.code = String(describing: codeStr)
+                    self.getCodeBtn.maxCount = 60
+                    self.getCodeBtn.start()
+                    self.codeText.becomeFirstResponder()
+                }
+            }else{
+                ZXNetwork.errorCodeParse(status, httpError: {
+                    ZXHUD.showFailure(in: self.view, text: "连接失败请检查网络或重试", delay: ZX.HUDDelay)
+                }, serverError: {
+                    ZXHUD.showFailure(in: self.view, text: (errMsg?.description)!, delay: ZX.HUDDelay)
+                })
+            }
+        }
+    }
+    
+    //MARK: - HTTP
+    func requestForLogin() ->Void{
+        
+        self.loginBtn.isEnabled = false
+        var dic: Dictionary<String,Any> = Dictionary()
+        if ZXDevice.zx_deviceUUID().isEmpty == false {
+            dic["uuid"] = ZXDevice.zx_deviceUUID()
+        }
+        dic["tel"] = self.telText.text
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.User.login), params: dic, method: .post) { (success, status, content, string, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            self.loginBtn.isEnabled = true
+            if status == ZXAPI_SUCCESS {
+                ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                if let data = content["data"] as? Dictionary<String,Any> {
+                    //保存用户登录信息
+                    ZXUser.user.save(data)
+                    
+                    //更新用户个人信息
+                    var isNewUser: Int = -1
+                    isNewUser = data["isNew"] as! Int
+                    self.isNew = isNewUser
+                    
+                    //更新用户个人信息
+                    self.updateUserInfo()
+                    
+                    //进入主界面
+                    self.changeContrller(isNewUser)
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: (errMsg?.description)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    func updateUserInfo() {
+        DispatchQueue.main.async {
+            //1.获取设备信息
+            ZXLoginManager.requestForEquipment()
+            
+            //2.网络请求闪屏信息并保存
+            if self.isNew == 0 {
+                ZXLoginManager.requestForFlashScreen()
+            }
+            
+            //3.更新会员位置
+            ZXLoginManager.requestForUpdateUserLocation()
+        }
+    }
+    
+    func changeContrller(_ isNewUser: Int) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute:{
+            //1. 登录失效
+            if self.logonInvalid {
+                if self.lastLoginID == self.telText.text {
+                    self.dismiss(animated: true, completion: nil)
+                    return
+                }else{//切换账号的情况
+                    ZXRootController.zxReload()
+                    ZXRouter.changeRootViewController(ZXRootController.zx_tabbarVC())
+                }
+            }else{
+                if isNewUser == 1 {//新会员进入修改个人信息页面
+                    let userInfoVC = ZXUserInfoViewController()
+                    self.navigationController?.pushViewController(userInfoVC, animated: true)
+                }else if isNewUser == 0 {
+                    ZXRouter.changeRootViewController(ZXRootController.zx_tabbarVC())
+                }
+            }
+        })
+    }
+    
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+}
+
+extension ZXLoginRootViewController: UITextFieldDelegate {
+   
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == self.telText {
+            let cs = CharacterSet.init(charactersIn: "0123456789").inverted
+            let filtered = string.components(separatedBy: cs).joined(separator: "")
+            if string != filtered {
+                return false
+            }
+            if range.location > 10 {
+                ZXHUD.showFailure(in: self.view, text: "手机号不能大于11位！", delay: ZX.HUDDelay)
+                return false
+            }
+            let str = textField.text ?? ""
+            let str2 = (str as NSString).replacingCharacters(in: range, with: string)
+            if str2.characters.count == 1 && str2 != "1" {
+                return false
+            }
+        } else if textField == self.codeText {
+            let cs = CharacterSet.init(charactersIn: "0123456789").inverted
+            let filtered = string.components(separatedBy: cs).joined(separator: "")
+            if string != filtered {
+                return false
+            }
+            if range.location > 5 {
+                ZXHUD.showFailure(in: self.view, text: "验证码不能大于6位！", delay: ZX.HUDDelay)
+                return false
+            }
+        }
+        return true
+    }
+}

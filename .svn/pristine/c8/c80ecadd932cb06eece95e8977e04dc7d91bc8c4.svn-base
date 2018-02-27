@@ -1,0 +1,21 @@
+//
+//  ZXNearbyController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/15.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXNearbyController: NSObject {
+    class func requestForPharmacyList(completion:((_ success:Bool,_ status: Int,_ cont: Dictionary<String,Any>,_ string: String ,_ errMessge: String)->Void)?) {
+        ZXLocationUtils.shareInstance.checkCurrentLocation { (status, location) in
+            if status == ZXCheckLocationStatus.success {
+                ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Nearby.nearbyDrugstore), params: ["latitude":location?.coordinate.latitude ?? 0,"longitude":location?.coordinate.longitude ?? 0], method: .post) { (succ, code, content, str, errMsg) in
+                    completion!(succ,code,content,str,errMsg?.errorMessage ?? "未知错误")
+                }
+            }
+        }
+    }
+}

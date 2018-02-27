@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="k6B-5G-H6L" customClass="ZXNoRemindCell" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="360" height="249"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="360" height="249"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="illstration" translatesAutoresizingMaskIntoConstraints="NO" id="cVS-Pz-zSW">
+                        <rect key="frame" x="132" y="25" width="96" height="119"/>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="点击右上方“+”添加用药提醒" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="l0r-ic-7Li">
+                        <rect key="frame" x="84.5" y="159" width="192.5" height="18"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="按时服药，身体才能健康哦" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WCc-ZF-Mat">
+                        <rect key="frame" x="88" y="182" width="184" height="18"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+            </view>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="WCc-ZF-Mat" firstAttribute="top" secondItem="l0r-ic-7Li" secondAttribute="bottom" constant="5" id="Dcw-4B-ztH"/>
+                <constraint firstItem="cVS-Pz-zSW" firstAttribute="top" secondItem="k6B-5G-H6L" secondAttribute="top" constant="25" id="NKp-14-uNd"/>
+                <constraint firstItem="l0r-ic-7Li" firstAttribute="centerX" secondItem="k6B-5G-H6L" secondAttribute="centerX" id="Pju-J5-igH"/>
+                <constraint firstItem="cVS-Pz-zSW" firstAttribute="centerX" secondItem="k6B-5G-H6L" secondAttribute="centerX" id="RHz-SJ-Omd"/>
+                <constraint firstItem="l0r-ic-7Li" firstAttribute="top" secondItem="cVS-Pz-zSW" secondAttribute="bottom" constant="15" id="m34-N6-Nm9"/>
+                <constraint firstItem="WCc-ZF-Mat" firstAttribute="centerX" secondItem="k6B-5G-H6L" secondAttribute="centerX" id="maq-Eh-IFr"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="smX-7m-E3o"/>
+            <size key="customSize" width="360" height="243"/>
+            <point key="canvasLocation" x="40" y="134.5"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="illstration" width="96" height="119"/>
+    </resources>
+</document>

@@ -1,0 +1,389 @@
+//
+//  ZXQRCodeScanViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/3.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+import AVFoundation
+
+/// 店铺二维码扫描
+class ZXQRCodeScanViewController: ZXUIViewController,UIGestureRecognizerDelegate {
+
+    @IBOutlet weak var btnNeabyStore: UIButton!
+    @IBOutlet weak var lbTitle: UILabel!
+    
+    //Scan Content View
+    @IBOutlet weak var scanContentView: UIView!//承载图像
+    @IBOutlet weak var scanFrame: UIView!//扫描区域
+    
+    //Animation Layer
+    var animationImage:UIImageView?
+    var session:AVCaptureSession?
+    
+    //
+    var checking = false
+    var isScanAction = true
+    
+    var location = CLLocation.init(latitude: ZX.Location.latitude, longitude: ZX.Location.longitude)
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Do any additional setup after loading the view.
+        self.scanFrame.backgroundColor = UIColor.clear
+        self.lbTitle.font = UIFont.zx_titleFont(ZXNavBarConfig.titleFontSize)
+        btnNeabyStore.titleLabel?.font = UIFont.zx_bodyFont
+        btnNeabyStore.setTitleColor(UIColor.zx_tintColor, for: .normal)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.s_enterBackground), name: .UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.s_enterForeground), name: .UIApplicationWillEnterForeground, object: nil)
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        ZXQRCodeScanViewController.checkAuthorization { (status) in
+            if status == .authorized || status == .notDetermined {
+                if CLLocationManager.locationServicesEnabled() {
+                    let status = CLLocationManager.authorizationStatus()
+                    if status == .authorizedAlways || status == .authorizedWhenInUse {
+                        ZXLocationUtils.shareInstance.checkCurrentLocation(completion: { (status, location) in
+                            if let location = location {
+                                self.location = location
+                            }
+                            self.beginScanning()
+                        })
+                    } else {
+                        self.beginScanning()
+                    }
+                } else {
+                    self.beginScanning()
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: "未授权,无法使用相机", delay: ZX.HUDDelay)
+            }
+        }
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if let vc = self.navigationController?.viewControllers.last {
+            if !(vc is ZXJoinSuccessViewController) {
+                self.navigationController?.setNavigationBarHidden(false, animated: true)
+            }
+        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.stopScan()
+    }
+    
+    @objc func s_enterBackground() {
+        self.animationImage?.layer.timeOffset = CACurrentMediaTime()
+    }
+    
+    @objc func s_enterForeground() {
+        self.resumeAnimation()
+    }
+    
+    // MARK: - 附近药店
+    @IBAction func nearbyDrugStoreAction(_ sender: Any) {
+        if let nav = self.navigationController {
+            var neayByStoreVC: ZXNearbyRootViewController?
+            for vc in nav.viewControllers {
+                if let nVC = vc as? ZXNearbyRootViewController {
+                    neayByStoreVC = nVC
+                    break
+                }
+            }
+            if neayByStoreVC != nil {
+                self.navigationController?.popToViewController(neayByStoreVC!, animated: true)
+            } else {
+                self.navigationController?.popToRootViewController(animated: false)
+                ZXRouter.tabbarShouldSelected(at: 1)
+            }
+        } else {
+            self.dismiss(animated: true, completion: {
+                ZXRouter.tabbarShouldSelected(at: 1)
+            })
+        }
+    }
+    //返回
+    @IBAction func backAction(_ sender: Any) {
+        self.dismissAction()
+    }
+}
+
+extension ZXQRCodeScanViewController {
+    static func checkAuthorization(completion:((_ status:AVAuthorizationStatus) -> Void)?) {
+        let status = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
+        switch status {
+        case .authorized:
+            completion?(.authorized)
+        case .denied:
+            completion?(.denied)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { (granted) in
+                DispatchQueue.main.async {
+                    if granted{
+                        completion?(.authorized)
+                    }else {
+                        completion?(.denied)
+                    }
+                }
+            })
+        case .restricted:
+            completion?(.restricted)
+        }
+    }
+    
+    func stopScan() {
+        if let session = self.session,session.isRunning {
+            session.stopRunning()
+        }
+        self.animationImage?.layer.removeAllAnimations()
+    }
+    
+    @objc func restartScan() {
+        if let session = session {
+            if session.isRunning {return}
+            session.startRunning()
+            self.resumeAnimation()
+        }
+    }
+    
+    func resumeAnimation() {
+        if let image = animationImage {
+            if image.layer.animation(forKey: "translationAnimation") != nil {
+                let pauseTime = image.layer.timeOffset
+                let beginTime = CACurrentMediaTime() - pauseTime
+                image.layer.timeOffset = 0
+                image.layer.beginTime = beginTime
+                image.layer.speed = 1.0
+            }else {
+                let scanNetImageViewH = self.scanFrame.frame.size.height
+                let scanNetImageViewW = self.scanFrame.frame.size.width
+                self.animationImage?.frame = CGRect(x: 0, y: -scanNetImageViewH, width: scanNetImageViewW, height: scanNetImageViewH)
+                let scanNetAnimation = CABasicAnimation()
+                scanNetAnimation.keyPath = "transform.translation.y"
+                scanNetAnimation.byValue = (scanNetImageViewH)
+                scanNetAnimation.duration = 1.0
+                scanNetAnimation.repeatCount = MAXFLOAT
+                self.animationImage?.layer.add(scanNetAnimation, forKey: "translationAnimation")
+                if let image = self.animationImage {
+                    self.scanFrame.addSubview(image)
+                }
+            }
+        }
+    }
+    
+    func beginScanning() {
+        if session == nil,let device = AVCaptureDevice.default(for: AVMediaType.video) {
+            do {
+                let input = try AVCaptureDeviceInput.init(device: device)
+                let output = AVCaptureMetadataOutput()
+                //设置代理 在主线程里刷新
+                output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+                //设置有效扫描区域
+                let scanCrop = self.getScanCrop(toRect: self.scanFrame.frame, readerViewBounds: self.scanContentView.bounds)
+                //设置扫描范围CGRectMake(Y,X,H,W),1代表最大值 右上角基准
+                output.rectOfInterest = scanCrop
+                //
+                self.session = AVCaptureSession()
+                self.session?.sessionPreset = AVCaptureSession.Preset.high
+                self.session?.addInput(input)
+                self.session?.addOutput(output)
+                output.metadataObjectTypes = [AVMetadataObject.ObjectType.qr,AVMetadataObject.ObjectType.code128,AVMetadataObject.ObjectType.ean8,AVMetadataObject.ObjectType.ean13,AVMetadataObject.ObjectType.code39,AVMetadataObject.ObjectType.code93,AVMetadataObject.ObjectType.upce,AVMetadataObject.ObjectType.code39Mod43,AVMetadataObject.ObjectType.pdf417,AVMetadataObject.ObjectType.aztec,AVMetadataObject.ObjectType.itf14,AVMetadataObject.ObjectType.dataMatrix]
+                let layer = AVCaptureVideoPreviewLayer.init(session: self.session!)
+                layer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+                layer.frame = self.scanContentView.bounds
+                self.scanContentView.layer.insertSublayer(layer, at: 0)
+                //添加漏空遮罩层
+                self.addMaskLayer()
+            } catch  {
+                ZXAlertUtils.showAlert(withTitle: "提示", message: "相机不可用")
+                return
+            }
+        }
+        self.restartScan()
+    }
+    //MARK: - 漏空遮罩层
+    fileprivate func addMaskLayer() {
+        let maskLayer = CALayer()
+        maskLayer.frame = UIScreen.main.bounds
+        maskLayer.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.6).cgColor
+        let empty = CAShapeLayer()
+        let frame = self.scanFrame.frame
+        let path = UIBezierPath(roundedRect: self.scanContentView.bounds, cornerRadius: 0)
+        path.append(UIBezierPath(roundedRect: CGRect(x: frame.origin.x, y: frame.origin.y, width: frame.size.width, height: frame.size.height), cornerRadius: 0).reversing())
+        empty.path = path.cgPath
+        maskLayer.mask = empty
+        self.scanContentView.layer.insertSublayer(maskLayer, below: self.lbTitle.layer)
+        self.animationImage = UIImageView.init(image: #imageLiteral(resourceName: "scan_net"))
+    }
+    
+    //MARK: - 获取扫描框比例关系
+    fileprivate func getScanCrop(toRect rect:CGRect,readerViewBounds bounds:CGRect) -> CGRect {
+        let x = rect.origin.y / bounds.size.height
+        let y = (bounds.size.width - rect.size.width) / 2 / bounds.size.width
+        let width = rect.size.height / bounds.size.height
+        let height = rect.size.width / bounds.size.width
+        return CGRect(x: x, y: y, width: width, height: height)//(Y, X, W, H)
+    }
+    
+    func dismissAction() {
+        if self.navigationController != nil {
+            self.navigationController?.popViewController(animated: true)
+        }else{
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    func show(at vc:UIViewController) {
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) {
+            ZXQRCodeScanViewController.checkAuthorization { (status) in
+                if status == .authorized || status == .notDetermined {
+                    if let nav = vc as? UINavigationController {
+                        nav.pushViewController(self, animated: true)
+                    }else if vc.navigationController != nil {
+                        vc.navigationController?.pushViewController(self, animated: true)
+                    }else{
+                        vc.present(self, animated: true, completion: nil)
+                    }
+                }else{
+                    if status == .denied {
+                        ZXAlertUtils.showAlert(wihtTitle: "提示", message: "您阻止了相机访问权限,请在设置中开启", buttonTexts: ["取消","马上打开"], action: { (index) in
+                            if index == 1 {
+                                ZXCommonUtils.openURL(UIApplicationOpenSettingsURLString)
+                            }
+                        })
+                    }else{
+                        ZXHUD.showFailure(in: vc.view, text: "相机功能被禁用", delay: ZX.HUDDelay)
+                    }
+                }
+            }
+        }else{
+            ZXHUD.showFailure(in: vc.view, text: "相机功能不可用", delay: ZX.HUDDelay)
+        }
+    }
+}
+//MARK: - MetadataOutputDelegate
+extension ZXQRCodeScanViewController: AVCaptureMetadataOutputObjectsDelegate{
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        if checking {
+            return
+        }
+        checking = true
+        self.stopScan()
+        if metadataObjects.count > 0 {
+            if let metaDataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject {
+                guard let result = metaDataObject.stringValue else {
+                    self.restartScan()
+                    checking = false
+                    return
+                }
+                if (result.range(of: ZX.QRCode_ContainText) != nil)  {
+                    if let storeIdRange = result.range(of: "drugstoreid=[\\d]*", options: .regularExpression, range: nil, locale: nil) {
+                        let userIdRange = result.range(of: "userid=[\\d]*", options: .regularExpression, range: nil, locale: nil)
+                        var storeId = result.substring(with: storeIdRange)
+                        storeId = storeId.replacingOccurrences(of: "drugstoreid=", with: "")
+                        var sId = (storeId as NSString).longLongValue
+                        if sId < 2000000 {//ID 小于2,000,000
+                            sId += 2000000
+                        }
+                        storeId = "\(sId)"
+                        var userId: String?
+                        if let uRange = userIdRange {
+                            userId = result.substring(with: uRange)
+                            userId = userId?.replacingOccurrences(of: "userid=", with: "")
+                        }
+                        self.joinMemberTo(storeId: storeId, userId: userId)
+                    } else {
+                        ZXHUD.showFailure(in: self.view, text: "二维码格式错误", delay: ZX.HUDDelay)
+                        //self.restartScan()
+                        checking = false
+                        self.perform(#selector(restartScan), with: nil, afterDelay: ZX.HUDDelay)
+                    }
+                } else {
+                    ZXHUD.showFailure(in: self.view, text: "二维码格式错误", delay: ZX.HUDDelay)
+                    //self.restartScan()
+                    checking = false
+                    self.perform(#selector(restartScan), with: nil, afterDelay: ZX.HUDDelay)
+                }
+            } else {
+                self.restartScan()
+                checking = false
+            }
+        }else {
+            self.restartScan()
+            checking = false
+        }
+    }
+    
+    func joinMemberTo(storeId: String,userId: String?) {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+        ZXStoreMemberViewModel.joinTo(storeId: storeId, userId: userId, location: self.location) { (isNew, success, code, errorMsg) in
+            if success {
+                NotificationCenter.default.post(name: ZXNotification.Member.joinSuccess.zx_noticeName(), object: ["storeId": storeId])
+                //获取店铺详情并跳转
+                ZXStoreMemberViewModel.storeShortInfo(storeId: storeId, completion: { (success, code, model, errorMsg) in
+                    ZXHUD.hide(for: self.view, animated: true)
+                    self.checking = false
+                    if success {
+                        if let store = model {
+                            if !isNew { //跳转到成功界面
+                                let successVC = ZXJoinSuccessViewController()
+                                successVC.storeInfo = store
+                                if let rootvc = self.navigationController?.viewControllers.first {
+                                    self.navigationController?.setNavigationBarHidden(false, animated: true)
+                                    self.navigationController?.setViewControllers([rootvc,successVC], animated: true)
+                                } else {
+                                    self.navigationController?.pushViewController(successVC, animated: true)
+                                }
+                                
+                                //获取历史未失效现金券 失败不做二次处理
+                                ZXStoreMemberViewModel.dispatchHistoryCoupon(storeId: storeId, to: ZXUser.user.memberId)
+                                //历史促销信息
+                                ZXStoreMemberViewModel.deliverHistoryPromotion(storeId: storeId, to: ZXUser.user.memberId)
+                            } else { //直接进入店铺
+                                let store = ZXStoreRootViewController.configVC(storeId: store.storeId, memberId: ZXUser.user.memberId, token: ZXUser.user.userToken)
+                                if let rootvc = self.navigationController?.viewControllers.first {
+                                    self.navigationController?.setNavigationBarHidden(false, animated: true)
+                                    self.navigationController?.setViewControllers([rootvc,store], animated: true)
+                                } else {
+                                    self.navigationController?.pushViewController(store, animated: true)
+                                }
+                            }
+                        } else {
+                            ZXHUD.showFailure(in: self.view, text: "店铺不存在或已过期", delay: ZX.HUDDelay)
+                            self.checking = false
+                            self.perform(#selector(self.restartScan), with: nil, afterDelay: ZX.HUDDelay)
+                        }
+                    } else {
+                        ZXHUD.showFailure(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                        self.checking = false
+                        self.perform(#selector(self.restartScan), with: nil, afterDelay: ZX.HUDDelay)
+                    }
+                })
+            } else {
+                ZXHUD.hide(for: self.view, animated: true)
+                ZXHUD.showFailure(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                //self.restartScan()
+                self.checking = false
+                self.perform(#selector(self.restartScan), with: nil, afterDelay: ZX.HUDDelay)
+            }
+        }
+    }
+}

@@ -1,0 +1,57 @@
+//
+//  ZXAgeSexInputCell.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+let ZXItemInputAgeTextFiledTag = 809003
+
+class ZXAgeSexInputCell: UITableViewCell,UITextFieldDelegate {
+    
+    @IBOutlet weak var lbSex: UILabel!
+    @IBOutlet weak var lbAge: UILabel!
+    
+    @IBOutlet weak var txtAge: UITextField!
+    @IBOutlet weak var btnSex: UIButton!
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+        self.selectionStyle = .none
+        
+        self.lbSex.font = UIFont.zx_bodyFont(15)
+        self.lbSex.textColor = UIColor.zx_textColorTitle
+        self.lbAge.font = UIFont.zx_bodyFont(15)
+        self.lbAge.textColor = UIColor.zx_textColorTitle
+        
+        self.btnSex.titleLabel?.font = UIFont.zx_bodyFont(15)
+        self.btnSex.setTitleColor(UIColor.zx_textColorMark, for: .normal)
+        self.btnSex.setTitleColor(UIColor.zx_textColorTitle, for: .highlighted)
+        self.btnSex.setTitleColor(UIColor.zx_textColorTitle, for: .selected)
+
+        self.txtAge.font = UIFont.zx_bodyFont(15)
+        self.txtAge.textColor = UIColor.zx_textColorTitle
+        self.txtAge.tag = ZXItemInputAgeTextFiledTag
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+
+        // Configure the view for the selected state
+    }
+    @IBAction func sexAction(_ sender: Any) {
+        
+    }
+    
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.txtAge.resignFirstResponder()
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        return true
+    }
+}

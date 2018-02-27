@@ -1,0 +1,145 @@
+//
+//  ZXProfilePopView.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/10.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+protocol ZXProfilePopViewDelegate: NSObjectProtocol {
+    func didZXProfilePopView(_ str: String)
+}
+
+class ZXProfilePopView: UIViewController {
+    @IBOutlet weak var tableView: UITableView!
+    weak var delegate: ZXProfilePopViewDelegate?
+    let cellHeight: CGFloat = 40.0
+    var titleStr: String = ""
+    
+    @IBOutlet weak var tableViewH: NSLayoutConstraint!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.view.alpha = 0.25
+        self.view.backgroundColor = UIColor.black.withAlphaComponent(0.25)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        
+        self.loadData()
+    }
+    
+    func loadData() {
+        let newHeight: CGFloat = cellHeight*CGFloat(self.dataArray.count + 1)
+        self.tableViewH.constant = newHeight
+        
+        self.view.layoutIfNeeded()
+        
+        self.tableView.reloadData()
+    }
+    
+    func dissmis() {
+        self.dismiss(animated: true, completion: nil)
+    }
+
+    func setDefault(_ defaultStr: String) {
+        self.dataArray.enumerateObjects { (_ objct:Any, _ index: Int, _ stop: UnsafeMutablePointer<ObjCBool>) in
+            if let tempStr = objct as? String , tempStr == defaultStr {
+                stop[0] = true
+                let indexPath: IndexPath = IndexPath.init(row: index, section: 0)
+                self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+                
+                let newCell: UITableViewCell = tableView.cellForRow(at: indexPath)!
+                if newCell.accessoryType == .none {
+                    newCell.accessoryType = .checkmark
+                    newCell.textLabel?.textColor = UIColor.zx_tintColor
+                }else{
+                    newCell.accessoryType = .none
+                    newCell.textLabel?.textColor = UIColor.zx_textColorBody
+                }
+            }
+        }
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    lazy var dataArray: NSMutableArray = {
+        let arr: NSMutableArray = NSMutableArray.init(capacity: 5)
+        return arr
+    }()
+}
+
+extension ZXProfilePopView: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.dataArray.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 40.0
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 40.0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell:UITableViewCell = tableView.dequeueReusableCell(withIdentifier: "profileCell", for: indexPath)
+        cell.textLabel?.textColor = UIColor.zx_textColorMark
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView: UIView = UIView.init(frame: CGRect.init(x: 0, y: 0, width: ZXBOUNDS_WIDTH, height: 40.0))
+        
+        let title:UILabel = UILabel.init(frame: CGRect.init(x: 80, y: 0, width: headerView.width - 2*80, height: 39))
+        title.textColor = UIColor.zx_subTintColor
+        title.baselineAdjustment = .alignCenters
+        title.text = self.titleStr
+        headerView.addSubview(title)
+        
+        let geliView: UIView = UIView.init(frame: CGRect.init(x: 0, y: title.frame.maxY, width: ZXBOUNDS_WIDTH, height: 1.0))
+        geliView.backgroundColor = UIColor.lightGray
+        headerView.addSubview(geliView)
+        
+        return headerView
+    }
+}
+
+extension ZXProfilePopView: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let newCell: UITableViewCell = tableView.cellForRow(at: indexPath)!
+        if newCell.accessoryType == .none {
+            newCell.accessoryType = .checkmark
+            newCell.textLabel?.textColor = UIColor.zx_tintColor
+        }else{
+            newCell.accessoryType = .none
+            newCell.textLabel?.textColor = UIColor.zx_textColorBody
+        }
+        
+        var str: String = ""
+        if self.dataArray.count != 0 {
+            str = self.dataArray.object(at: indexPath.row) as! String
+            if delegate != nil {
+                delegate?.didZXProfilePopView(str)
+            }
+        }
+        
+        self.dissmis()
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let newCell: UITableViewCell = tableView.cellForRow(at: indexPath)!
+        if newCell.accessoryType == .checkmark {
+            newCell.accessoryType = .none
+            newCell.textLabel?.textColor = UIColor.zx_textColorBody
+        }
+    }
+}

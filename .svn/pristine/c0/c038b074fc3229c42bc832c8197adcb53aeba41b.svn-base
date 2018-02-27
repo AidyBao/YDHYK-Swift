@@ -1,0 +1,186 @@
+//
+//  ZXDrugListView.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+import AnimatedCollectionViewLayout
+
+class ZXDrugListView: UIView {
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        self.setUI()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+        self.setUI()
+    }
+    
+    //MARK: - UI
+    func setUI() {
+        self.backgroundColor = UIColor.zx_tintColor
+        
+        self.addSubview(self.pageControl)
+        
+        self.addSubview(self.collectionView)
+        
+        self.pageControl.numberOfPages = 1
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        self.collectionView.frame = CGRect.init(x: 0, y: 7, width: self.bounds.size.width, height: 229)
+        
+        self.pageControl.frame = CGRect.init(x: 0, y: self.collectionView.frame.maxY, width: self.bounds.size.width, height: 32)
+    }
+    
+    //MARK: - LoadData
+    func loadData(_ dataArr: Array<Any>?) {
+        
+        if dataArr != nil {
+            self.remindTimeArray = dataArr!
+            self.pageControl.numberOfPages = self.remindTimeArray.count
+        }
+        
+        self.collectionView.reloadData()
+        
+        self.selectedNearestTime()
+    }
+    
+    //MARK: - 选中距当前时间最近的cell
+    func selectedNearestTime() {
+        //1. 获取当前时间
+        let currTime = ZXDateUtils.current.time(false)
+        
+        //2. 时间格式
+        let format: DateFormatter = DateFormatter()
+        format.dateFormat = "HH:mm"
+        
+        //3. 当前时间格式
+        let currDate: Date = format.date(from: currTime)!
+        let currDateInt: TimeInterval = currDate.timeIntervalSinceReferenceDate
+        
+        //4. 去绝对值
+        var dateDict: Dictionary<String,Any> = Dictionary()
+        for (idx,dict) in self.remindTimeArray.enumerated() {
+            if let dict = dict as? Dictionary<String,Any> {
+                let pushTime = dict.keys.first
+                //推送时间
+                let pushDate:Date = format.date(from: pushTime!)!
+                //取与当前时间比较后的绝对值
+                let pushDateInt: TimeInterval = pushDate.timeIntervalSinceReferenceDate
+                let result = fabs(pushDateInt - currDateInt)
+                
+                //
+                dateDict["\(idx)"] = result
+            }
+        }
+        
+        //5. 排序
+        if dateDict.count > 0 {
+            let resultArr = dateDict.sorted { (arg0, arg1) -> Bool in
+                let value0: Double = arg0.value as! Double
+                let value1: Double = arg1.value as! Double
+                return value1 > value0
+            }
+            
+            //6. 取最小值
+            let firstDic = resultArr.first
+            let firstValue: Double = firstDic?.value as! Double
+            
+            //7. 获取索引
+            for (idx,objc) in dateDict.enumerated() {
+                let val: Double = objc.value as! Double
+                if val == firstValue {
+                    let indexPath: IndexPath = IndexPath.init(row: idx, section: 0)
+                    self.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+                    break
+                }
+            }
+        }
+    }
+    
+    
+    //MARK: Lazy
+    lazy var remindTimeArray: Array<Any> = {
+        let arr: Array<Any> = Array.init()
+        return arr
+    }()
+    
+    lazy var pageControl: UIPageControl = {
+        let pagCon: UIPageControl = UIPageControl.init()
+        pagCon.currentPageIndicatorTintColor = UIColor.white
+        pagCon.pageIndicatorTintColor = UIColor.zx_textColorBody
+        pagCon.currentPage = 0;
+        pagCon.backgroundColor = UIColor.zx_tintColor
+        return pagCon
+    }()
+    
+    lazy var collectionView: UICollectionView = {
+        let animLayout: AnimatedCollectionViewLayout = AnimatedCollectionViewLayout()
+        var animator: LinearCardAttributesAnimator = LinearCardAttributesAnimator()
+        animator.itemSpacing = 0.20
+        animator.scaleRate = 0.85
+        animLayout.animator = animator
+        animLayout.scrollDirection = .horizontal
+        animLayout.minimumLineSpacing = 0
+        animLayout.minimumInteritemSpacing = 0
+        animLayout.sectionInset = UIEdgeInsets.zero
+        let collView: UICollectionView = UICollectionView.init(frame: CGRect.zero, collectionViewLayout: animLayout)
+        collView.showsVerticalScrollIndicator = false
+        collView.showsHorizontalScrollIndicator = false
+        collView.delegate = self
+        collView.dataSource = self
+        collView.backgroundColor = UIColor.zx_tintColor
+        collView.isPagingEnabled = true
+        collView.autoresizingMask = [UIViewAutoresizing(rawValue: UIViewAutoresizing.RawValue(UInt8(UIViewAutoresizing.flexibleWidth.rawValue) | UInt8(UIViewAutoresizing.flexibleHeight.rawValue)))]
+        collView.register(UINib.init(nibName: String.init(describing: ZXRemindListCell.self), bundle: nil), forCellWithReuseIdentifier: ZXRemindListCell.ZXRemindListCellID)
+        collView.register(UINib.init(nibName: String.init(describing: ZXNoRemindCell.self), bundle: nil), forCellWithReuseIdentifier: ZXNoRemindCell.ZXNoRemindCellID)
+        return collView
+    }()
+}
+
+extension ZXDrugListView:UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        self.pageControl.currentPage = (NSInteger)(scrollView.contentOffset.x/(scrollView.bounds.size.width))
+    }
+}
+
+extension ZXDrugListView: UICollectionViewDelegate {
+    
+}
+
+extension ZXDrugListView: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize.init(width: ZXBOUNDS_WIDTH, height: 249.0)
+    }
+}
+
+extension ZXDrugListView: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if self.remindTimeArray.count > 0 {
+            return self.remindTimeArray.count
+        }else{
+            return 1
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if self.remindTimeArray.count > 0 {
+           let cell: ZXRemindListCell = collectionView.dequeueReusableCell(withReuseIdentifier: ZXRemindListCell.ZXRemindListCellID, for: indexPath) as! ZXRemindListCell
+            cell.loadData(self.remindTimeArray[indexPath.row] as! Dictionary<String, Any>)
+            return cell
+        }else{
+            let cell: ZXNoRemindCell = collectionView.dequeueReusableCell(withReuseIdentifier: ZXNoRemindCell.ZXNoRemindCellID, for: indexPath) as! ZXNoRemindCell
+            return cell
+        }
+    }
+}

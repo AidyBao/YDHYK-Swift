@@ -1,0 +1,28 @@
+//
+//  ZXDiscover+Scroll\.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/3.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+// MARK: - 控制滑动时 菜单隐藏/显示
+extension ZXDiscoverRootViewController: UIScrollViewDelegate {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        
+    }
+}

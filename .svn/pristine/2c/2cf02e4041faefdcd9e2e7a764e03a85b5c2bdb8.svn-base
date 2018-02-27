@@ -1,0 +1,19 @@
+//
+//  ZXCheckItemInputViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXCheckItemInputViewController: ZXUIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+    }
+    
+}

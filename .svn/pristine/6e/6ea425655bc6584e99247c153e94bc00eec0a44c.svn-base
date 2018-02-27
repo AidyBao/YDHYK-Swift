@@ -1,0 +1,279 @@
+//
+//  ZXLoginRootViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/1.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+//MARK: -
+let Login_UserName_MaxLenth = 11
+let Login_Password_MinLenth = 6
+let Login_Password_MaxLenth = 6
+
+class ZXLoginRootViewController: UIViewController {
+    
+    @IBOutlet weak var telLb: UILabel!
+    @IBOutlet weak var codeLb: UILabel!
+    
+    @IBOutlet weak var telText: UITextField!
+    @IBOutlet weak var codeText: UITextField!
+    
+    @IBOutlet weak var getCodeBtn: UIButton!
+    @IBOutlet weak var loginBtn: UIButton!
+    
+    @IBOutlet weak var bigBackView: UIView!
+    @IBOutlet weak var scrollView: UIScrollView!
+
+    @IBOutlet weak var logImgView: UIImageView!
+
+    var telePhoneNum: String = ""
+    var code: String = ""
+    var isNew: Int = -1
+    var isGettingPhoneCode: Bool = false
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        //加载动画
+        self.loadingAnimaImages()
+        
+        //
+        self.initWithUIStyle()
+        
+        //
+        self.addKeyBoardObsever()
+    }
+    
+    //MARK: - 初始化
+    func initWithUIStyle() -> Void {
+
+        //UI
+        self.telLb.textColor = UIColor.zx_textColorTitle
+        self.codeLb.textColor = UIColor.zx_textColorTitle
+        
+        if self.telText.text?.isEmpty == true , self.codeText.text?.isEmpty == true {
+            self.loginBtn.isEnabled = false
+        }
+        
+        self.loginBtn.layer.cornerRadius = 5.0
+        self.loginBtn.layer.masksToBounds = true
+        
+        self.telText.clearButtonMode = UITextFieldViewMode.whileEditing
+        self.codeText.clearButtonMode = UITextFieldViewMode.whileEditing
+        self.telText.font = UIFont.zx_bodyFont
+        self.codeText.font = UIFont.zx_bodyFont
+    }
+    
+    //MARK: - 加载动画
+    func loadingAnimaImages() -> Void {
+        var array:Array<UIImage> = Array()
+        for i in 1 ..< 54{
+            let img =  UIImage(named: String(format:"HYKLog-%zd",i))
+            if let img = img {
+                array.append(img)
+            }
+        }
+        
+        self.logImgView.animationImages = array
+        self.logImgView.animationDuration = 2.0
+        self.logImgView.animationRepeatCount = 1
+        self.logImgView.startAnimating()
+        
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.8, execute:{
+            self.logImgView.stopAnimating()
+            self.logImgView.image = UIImage(named: String(format:"HYKLog-%zd",54))
+        })
+    }
+    
+    //MARK: - 键盘通知
+    func addKeyBoardObsever() ->Void {
+        //
+        NotificationCenter.default.addObserver(self, selector: #selector(keyBoardWillShow(_:)), name:NSNotification.Name.UIKeyboardWillShow , object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyBoardWillHide(_:)), name: NSNotification.Name.UIKeyboardDidHide, object: nil)
+        //
+        let tap:UITapGestureRecognizer = UITapGestureRecognizer.init(target: self, action: #selector(resignTextFieldResponder))
+        self.bigBackView.addGestureRecognizer(tap)
+    }
+    
+    //键盘出现
+    @objc func keyBoardWillShow(_ notification: Notification){
+        let kbInfo = notification.userInfo
+        let kbRect = (kbInfo?[UIKeyboardFrameBeginUserInfoKey] as! NSValue).cgRectValue
+        let kbHeight:CGFloat = kbRect.size.height
+        let screenHeight:CGFloat = UIScreen.main.bounds.size.height
+        let viewBottom:CGFloat = self.loginBtn.frame.maxY
+        
+        if viewBottom + kbHeight < screenHeight {
+            return
+        }
+        
+        let reheight:CGFloat = viewBottom + kbHeight - screenHeight + 5
+        
+        self.scrollView.setContentOffset(CGPoint.init(x: 0, y: reheight), animated: true)
+    }
+    
+    //键盘收起
+    @objc func keyBoardWillHide(_ notification: Notification){
+        self.scrollView.setContentOffset(CGPoint.init(x: 0, y: 0), animated: true)
+    }
+    
+    //手势
+    @objc func resignTextFieldResponder() ->Void {
+        self.view.endEditing(true)
+        self.telText.resignFirstResponder()
+        self.codeText.resignFirstResponder()
+    }
+
+    @IBAction func loginBtnAction(_ sender: UIButton) {
+        self.view.endEditing(true)
+        self.telText .resignFirstResponder()
+        self.codeText .resignFirstResponder()
+        
+        //APP公共测试账号
+        if self.codeText.text == ZX.TestAccount.password ,
+            self.telText.text == ZX.TestAccount.account{
+            self.httpRequestLogin()
+        }else{
+            if self.codeText.text == self.code {
+                if self.telText.text == self.telePhoneNum {
+                    self.httpRequestLogin()
+                }else{
+                    ZXHUD.showFailure(in: self.view, text: "请输入正确的手机号", delay: ZX.HUDDelay)
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: "请输入正确的验证码", delay: ZX.HUDDelay)
+                
+            }
+        }
+    }
+    
+    //MARK: - HTTP
+    func httpRequestLogin() ->Void{
+        
+        self.loginBtn.isEnabled = false
+        var dic: Dictionary<String,Any> = Dictionary()
+        if ZXDevice.zx_deviceUUID().isEmpty == false {
+            dic["uuid"] = ZXDevice.zx_deviceUUID()
+        }
+        dic["tel"] = self.telText.text
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.User.login), params: dic, method: .post) { (success, status, content, string, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            self.loginBtn.isEnabled = true
+            if status == ZXAPI_SUCCESS {
+                ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                if let data = content["data"] as? Dictionary<String,Any> {
+                    ZXUser.user.save(data)
+                    
+                    self.updateUserInfo()
+                    
+                    var isNewUser: Int = -1
+                    isNewUser = data["isNew"] as! Int
+                    
+                    
+                }
+                
+
+                
+            }
+        }
+    }
+    
+    func updateUserInfo() {
+        
+    }
+    
+    
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+}
+
+extension ZXLoginRootViewController: UITextFieldDelegate {
+    //MARK: - UITextFeildDelegate
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField == self.telText {
+            self.codeText.resignFirstResponder()
+            self.telText.becomeFirstResponder()
+        }else if textField == self.codeText{
+            self.telText.resignFirstResponder()
+            self.codeText.becomeFirstResponder()
+        }
+        
+        //
+        NotificationCenter.default.addObserver(self, selector: #selector(textFieldDidChange(obj:)), name: Notification.Name.UITextFieldTextDidChange, object: textField)
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField == self.telText {
+            self.telText.resignFirstResponder()
+        }else if textField == self.codeText{
+            self.codeText.resignFirstResponder()
+        }
+        
+        //
+        NotificationCenter.default.removeObserver(self, name: Notification.Name.UITextFieldTextDidChange, object: textField)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.view.endEditing(true)
+        self.telText.resignFirstResponder()
+        self.codeText.resignFirstResponder()
+        
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let existedLength:Int = (textField.text?.characters.count)!
+        let selectedLength:Int = range.location
+        let replaceLength:Int = string.characters.count
+        if textField == self.telText {
+            if existedLength-selectedLength+replaceLength > Login_UserName_MaxLenth  {
+                ZXHUD.showFailure(in: self.view, text: "用户名不能大于\(Login_UserName_MaxLenth)位", delay: ZX.HUDDelay)
+                return false
+            }
+        }
+        
+        if textField == self.codeText {
+            if existedLength-selectedLength+replaceLength > Login_Password_MaxLenth {
+                ZXHUD.showFailure(in: self.view, text: "密码不能大于\(Login_Password_MaxLenth)位", delay: ZX.HUDDelay)
+                return false
+            }
+        }
+        return true
+    }
+    
+    //TextField发生改变时调用
+    @objc func textFieldDidChange(obj:Notification) ->Void {
+        
+        let textField:UITextField = obj.object as! UITextField
+        let str = textField.text
+        let set = CharacterSet.whitespacesAndNewlines
+        let keySting = str?.trimmingCharacters(in: set)
+        
+        if textField == self.telText {
+            if keySting?.characters.count == 0 || (((keySting?.characters.count) != nil) && self.codeText.text?.characters.count == 0) || (keySting?.characters.count == 0 && self.codeText.text?.characters.count == 0) {
+                self.loginBtn.isEnabled = false
+            }else if (self.codeText.text?.characters.count)! > Login_Password_MinLenth - 1{
+                self.loginBtn.isEnabled = true
+            }else{
+                self.loginBtn.isEnabled = false
+            }
+        }
+        
+        if textField == self.codeText {
+            if keySting?.characters.count == 0 || (((keySting?.characters.count) != nil) && self.telText.text?.characters.count == 0) || (keySting?.characters.count == 0 && self.telText.text?.characters.count == 0) {
+                self.loginBtn.isEnabled = false
+            }else if (keySting?.characters.count)! > Login_Password_MinLenth - 1{
+                self.loginBtn.isEnabled = true
+            }else{
+                self.loginBtn.isEnabled = false
+            }
+        }
+    }
+}

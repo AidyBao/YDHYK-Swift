@@ -1,0 +1,117 @@
+//
+//  ZXSettingViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/8.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXSettingViewController: ZXUITableViewController {
+    
+    @IBOutlet weak var drugLB: UILabel!
+    @IBOutlet weak var catchLb: UILabel!
+    @IBOutlet weak var aboutLb: UILabel!    
+    @IBOutlet weak var logoutLb: UILabel!
+    @IBOutlet weak var catchDetailLb: UILabel!
+    
+    class func loadStoryBoard() -> ZXSettingViewController {
+        return UIStoryboard.init(name: "ZXSetting", bundle: nil).instantiateViewController(withIdentifier: "Setting") as! ZXSettingViewController
+    }
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.hidesBottomBarWhenPushed = true
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.navigationItem.title = "系统设置"
+        
+        self.tableView.backgroundColor = UIColor.zx_subTintColor
+        self.drugLB.textColor = UIColor.zx_textColorTitle
+        self.catchLb.textColor = UIColor.zx_textColorTitle
+        self.aboutLb.textColor = UIColor.zx_textColorTitle
+        self.logoutLb.textColor = UIColor.zx_tintColor
+        self.catchDetailLb.textColor = UIColor.zx_textColorTitle
+        
+        self.catchDetailLb.text = String.init(format: "\(ZXCache.returnCacheSize())M")
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ZXSettingRemind" {
+            
+        }
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+}
+
+extension ZXSettingViewController {
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        switch indexPath.section {
+        case 0:
+            switch indexPath.row {
+            case 0:
+                self.performSegue(withIdentifier: "ZXSettingRemind", sender: nil)
+            case 1:
+                ZXAlertUtils.showAlert(wihtTitle: "提示", message: "确定清除缓存数据吗？", buttonTexts: ["取消","确定"] , action: { (index) in
+                    if index == 1 {
+                        ZXCache.cleanCache(competion: {
+                            self.catchDetailLb.text = "\(ZXCache.returnCacheSize())M"
+                        })
+                    }
+                })
+            default:
+                break
+            }
+        case 1:
+            switch indexPath.row {
+            case 0:
+                let webVC: ZXWebViewViewController = ZXWebViewViewController()
+                webVC.webUrl = "\(ZXURLConst.Web.url)\(ZXURLConst.Web.about)\(ZXDevice.zx_getBundleVersion())"
+                self.navigationController?.pushViewController(webVC, animated: true)
+            default:
+                break
+            }
+        case 2:
+            switch indexPath.row {
+            case 0:
+                ZXAlertUtils.showAlert(wihtTitle: "提示", message: "确认退出登录？", buttonTexts: ["取消","确定"] , action: { (index) in
+                    if index == 1 {
+                        ZXUser.user.logout()
+                        ZXUser.user.invalid()
+                        ZXRootController.zxReload()
+                        ZXRouter.changeRootViewController(ZXLoginRootViewController())
+                    }
+                })
+            default:
+                break
+            }
+        default:
+            break
+        }
+    }
+}
+
+extension ZXSettingViewController {
+    
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 10.0
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+}

@@ -1,0 +1,20 @@
+//
+//  ZXRemindController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/23.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+typealias requestCompletion = (_ succ:Bool, _ code: Int, _ content: Dictionary<String,Any>,_ str: String,_ errMsg: String) -> Void
+
+class ZXRemindController: NSObject {
+    
+    class func requestForSearchByRemindTime(complet:requestCompletion) {
+
+    
+    }
+
+}

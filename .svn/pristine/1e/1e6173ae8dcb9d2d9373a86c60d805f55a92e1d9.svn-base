@@ -1,0 +1,14 @@
+//
+//  ZXSearchModel.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/8.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXSearchModel: LKDBModel {
+
+
+}

@@ -1,0 +1,84 @@
+//
+//  ZXStoreListCell.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/20.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+protocol ZXStoreListCellDelegate: NSObjectProtocol {
+    func didZXStoreListCell(_ sender: UIButton, _ model: ZXSearchModel)
+}
+
+class ZXStoreListCell: UITableViewCell {
+    
+    static let ZXStoreListCellID: String = "ZXStoreListCell"
+    
+    struct BtnTag {
+        static let nav = 2211
+        static let tel = 2212
+        static let join = 2213
+        static let buy = 2214
+    }
+    @IBOutlet weak var joinBtn: UIButton!
+    @IBOutlet weak var buyBtn: UIButton!
+    @IBOutlet weak var vSeparateLine: UIView!
+    @IBOutlet weak var hSeparateLine: UIView!
+    @IBOutlet weak var icon: UIImageView!
+    @IBOutlet weak var titleLb: UILabel!
+    @IBOutlet weak var addrLb: UILabel!
+    @IBOutlet weak var navBtn: UIButton!
+    @IBOutlet weak var telBtn: UIButton!
+
+    var model: ZXSearchModel = ZXSearchModel()
+    weak var delegate: ZXStoreListCellDelegate?
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        self.selectionStyle = .none
+        
+        self.contentView.backgroundColor = UIColor.zx_subTintColor
+        self.titleLb.font = UIFont.boldSystemFont(ofSize: 17.0)
+        self.titleLb.textColor = UIColor.zx_textColorBody
+        
+        self.joinBtn.backgroundColor = UIColor.zx_tintColor
+        self.joinBtn.setTitleColor(UIColor.white, for: .normal)
+        self.joinBtn.titleLabel?.font = UIFont.zx_titleFont(14.0)
+        
+        self.vSeparateLine.backgroundColor = UIColor.zx_borderColor
+        self.hSeparateLine.backgroundColor = UIColor.zx_borderColor
+        
+        self.navBtn.setTitleColor(UIColor.zx_textColorTitle, for: .normal)
+        
+        self.telBtn.setTitleColor(UIColor.zx_textColorTitle, for: .normal)
+        
+    }
+    
+    func loadData(_ mode: ZXSearchModel) {
+        self.model = mode
+        
+        self.icon.kf.setImage(with: URL.init(string:mode.headPortraitStr), placeholder: UIImage.Default.drug, options: nil, progressBlock: nil, completionHandler: nil)
+        
+        self.titleLb.text = mode.name
+        
+        self.addrLb.text = mode.distanceStr + " " + mode.address
+        
+        if mode.isMember == 1 {
+            self.joinBtn.isHidden = true
+            self.joinBtn.backgroundColor = UIColor.white
+        }else if mode.isMember == 0 {
+            self.joinBtn.isHidden = false
+            self.joinBtn.setTitle("加入会员", for: .normal)
+            self.joinBtn.backgroundColor = UIColor.zx_tintColor
+        }
+    }
+    
+    @IBAction func storeDetailBtnAction(_ sender: UIButton) {
+        if delegate != nil {
+            delegate?.didZXStoreListCell(sender, self.model)
+        }
+    }
+}

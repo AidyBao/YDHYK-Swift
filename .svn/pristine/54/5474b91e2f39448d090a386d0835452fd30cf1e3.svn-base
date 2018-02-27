@@ -1,0 +1,153 @@
+//
+//  ZXEditNameViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/9.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXEditNameViewController: ZXUITableViewController {
+    
+    static let ModifyName_Segue: String = "ModifyName"
+    
+    @IBOutlet weak var nickNameTex: UITextField!
+    var nikeName: String = ""
+    var saveButton:UIButton?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.title = "修改姓名"
+        
+        self.nickNameTex.font = UIFont.zx_bodyFont
+        self.nickNameTex.textColor = UIColor.zx_textColorBody
+        
+        self.nickNameTex.text = ZXUser.user.name
+        self.nikeName = ZXUser.user.name
+        
+        self.setNavgationView()
+    }
+    
+    func setNavgationView() -> Void {
+        self.saveButton = UIButton.init(type: UIButtonType.custom)
+        self.saveButton?.frame.size = CGSize.init(width: 40, height: 40)
+        self.saveButton?.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        self.saveButton?.setTitle("保存", for: UIControlState.normal)
+        self.saveButton?.addTarget(self, action: #selector(saveButtonClick(_:)), for: UIControlEvents.touchUpInside)
+        let rightItem:UIBarButtonItem = UIBarButtonItem.init(customView: self.saveButton!)
+        let rightSpace = UIBarButtonItem.init(barButtonSystemItem: UIBarButtonSystemItem.fixedSpace, target: nil, action: nil)
+        rightSpace.width = -7
+        self.navigationItem.rightBarButtonItems = [rightSpace,rightItem]
+        self.saveButton?.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: UIControlState.normal)
+        self.saveButton?.isEnabled = false
+    }
+    
+    //MARK: - saveButtonClick
+    @objc func saveButtonClick(_ sender:UIButton) -> Void {
+        self.httpRequestForModifyName()
+    }
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+
+}
+
+extension ZXEditNameViewController: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        self.nickNameTex.becomeFirstResponder()
+        
+        //
+        NotificationCenter.default.addObserver(self, selector: #selector(textFieldDidChange(_:)), name: NSNotification.Name.UITextFieldTextDidChange, object: textField)
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        self.nickNameTex.resignFirstResponder()
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UITextFieldTextDidChange, object: nil)
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let existedLength:NSInteger = (textField.text?.count)!
+        let selectedLength:NSInteger = range.length
+        let replaceLength:NSInteger = string.count
+        
+        
+        if existedLength-selectedLength+replaceLength > 16 {
+            ZXHUD.showFailure(in: self.view, text: "姓名不能超过16个字符", delay: ZX.HUDDelay)
+            return false
+        }
+        
+        if string != "",!(string.zx_predicateNickname()) || (textField.textInputMode?.primaryLanguage!.isEqual("emoji")) == true || ((textField.textInputMode?.primaryLanguage) == nil){
+            return false
+        }
+        return true
+    }
+    
+    @objc func textFieldDidChange(_ objct:Notification){
+        let textField = objct.object as! UITextField
+        let oldStr:String = textField.text!
+        let charcterSet:NSCharacterSet = NSCharacterSet.whitespacesAndNewlines as NSCharacterSet
+        let newStr:String = oldStr.trimmingCharacters(in: charcterSet as CharacterSet)
+        
+        if newStr.isEmpty == false && !newStr.isEqual(self.nikeName){
+            self.saveButton?.setTitleColor(UIColor.white.withAlphaComponent(0.8), for: UIControlState.normal)
+            self.saveButton?.isEnabled = true
+        }else{
+            self.saveButton?.setTitleColor(UIColor.white.withAlphaComponent(0.3), for: UIControlState.normal)
+            self.saveButton?.isEnabled=false
+        }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.nickNameTex.resignFirstResponder()
+        self.view.endEditing(true)
+    }
+}
+
+//MARK: - HTTP
+extension ZXEditNameViewController {
+    //MARK: - HTTP
+    func httpRequestForModifyName() -> Void {
+        var params:Dictionary<String,Any> = Dictionary.init()
+        params["name"] = self.nickNameTex.text!
+        
+        ZXHUD .showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.updateName), params: params, method: .post) { (success, status, content, string, error) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if success {
+                if status == ZXAPI_SUCCESS {
+                    ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                    //
+                    self.saveUserName()
+                    //
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.0, execute: {
+                        self.navigationController?.popViewController(animated: true)
+                    })
+                }else{
+                    ZXHUD.showFailure(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                }
+            }else if status != ZXAPI_LOGIN_INVALID{
+                ZXHUD.showFailure(in: self.view, text: (error?.errorMessage)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    //MARK: - 姓名
+    func saveUserName() -> Void {
+        let zxUser = ZXUser.user
+        zxUser.name = self.nickNameTex.text!
+        zxUser.sync()
+    }
+}
+
+//MARK: - TableViewDelegate
+extension ZXEditNameViewController {
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 15.0
+    }
+}

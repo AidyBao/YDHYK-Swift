@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="L4c-aG-CVa" customClass="ZXDrugListCell" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="28"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="L4c-aG-CVa" id="hzP-24-ZtN">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="27.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="速效伤风胶囊" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ey3-15-Nrc">
+                        <rect key="frame" x="14" y="3.5" width="234" height="21"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="21" id="h1g-s4-sJc"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3片" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9wH-H7-HuC">
+                        <rect key="frame" x="256" y="3.5" width="54" height="21"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="21" id="bhm-Ig-3G2"/>
+                            <constraint firstAttribute="width" constant="54" id="mCO-hJ-L70"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                <constraints>
+                    <constraint firstItem="ey3-15-Nrc" firstAttribute="leading" secondItem="hzP-24-ZtN" secondAttribute="leading" constant="14" id="1mz-ko-tvh"/>
+                    <constraint firstItem="9wH-H7-HuC" firstAttribute="centerY" secondItem="hzP-24-ZtN" secondAttribute="centerY" id="3GD-Gg-t82"/>
+                    <constraint firstItem="9wH-H7-HuC" firstAttribute="leading" secondItem="ey3-15-Nrc" secondAttribute="trailing" constant="8" id="BW3-Wd-qJo"/>
+                    <constraint firstAttribute="trailing" secondItem="9wH-H7-HuC" secondAttribute="trailing" constant="10" id="Dqt-QC-XZS"/>
+                    <constraint firstItem="ey3-15-Nrc" firstAttribute="centerY" secondItem="hzP-24-ZtN" secondAttribute="centerY" id="QFE-IN-ZgE"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <connections>
+                <outlet property="countLb" destination="9wH-H7-HuC" id="HUK-eY-xWN"/>
+                <outlet property="nameLb" destination="ey3-15-Nrc" id="ztU-do-DLK"/>
+            </connections>
+        </tableViewCell>
+    </objects>
+</document>

@@ -1,0 +1,98 @@
+//
+//  ZXEditProfileViewController+Delegate.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/9.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+//MARK: - UITableView
+extension ZXEditProfileViewController {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if section == 1 {
+            return 10.0
+        }
+        return CGFloat.leastNormalMagnitude
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch indexPath.section {
+        case 0:
+            switch indexPath.row {
+            case 0://头像
+                self.setupUserHeadPortraits()
+            case 1:
+                self.performSegue(withIdentifier: ZXEditNameViewController.ModifyName_Segue, sender: nil)
+            case 2:
+                let sexView: ZXPopView = ZXPopView.loadNib()
+                sexView.delegate = self
+                ZXRootController.appWindow()?.addSubview(sexView)
+                sexView.loadData(self.sexArray,"性别")
+                sexView.setDefault(self.sex.text!)
+            case 3:
+                break
+            default:
+                break
+            }
+        case 1:
+            switch indexPath.section {
+            case 0:
+                break
+            case 1:
+                break
+            default:
+                break
+            }
+        default:
+            break
+        }
+    }
+}
+
+//MARK: - UITableView
+extension ZXEditProfileViewController:UIImagePickerControllerDelegate,UINavigationControllerDelegate{
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        picker.dismiss(animated: true) {
+            
+            let portraitImage: UIImage = info[UIImagePickerControllerOriginalImage] as! UIImage
+            let resultImage = UIImage.imageByScalingToMaxSize(sourceImage: portraitImage)
+            
+            let cropperVC: ZXImageCropperViewController = ZXImageCropperViewController.init(originalImage: resultImage, cropFrame: CGRect.init(x: 0, y: 100, width: ZXBOUNDS_WIDTH, height: ZXBOUNDS_WIDTH), limitScaleRatio: 3.0)
+            cropperVC.delegate = self
+            self.present(cropperVC, animated: true, completion: nil)
+        }
+    }
+}
+
+
+extension ZXEditProfileViewController: RBImageCropperDelegate {
+    func imageCropperDidCancel(_ cropperViewController: ZXImageCropperViewController) {
+        cropperViewController.dismiss(animated: true, completion: nil)
+    }
+    
+    func imageCropper(_ cropperViewController: ZXImageCropperViewController, didFinished editImg: UIImage) {
+        //2.上传服务器
+        self.requestForUpdateHeadImageFile(headImg: editImg)
+        
+        cropperViewController.dismiss(animated: true, completion: nil)
+    }
+}
+
+extension ZXEditProfileViewController: ZXPopViewDelegate {
+    func didSelectedPopViewCell(_ str: String, index: NSInteger) {
+        var sex: Int = -1
+        if str == "男" {
+            sex = 1
+        }else if str == "女" {
+            sex = 0
+        }
+        self.requestForModiySex(sex)
+    }
+}

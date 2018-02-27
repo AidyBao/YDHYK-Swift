@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="75" id="KGk-i7-Jjw" customClass="ZXUCOrderDrugCell" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="75"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="74.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="xY8-Xq-UC1">
+                        <rect key="frame" x="18" y="5" width="64.5" height="64.5"/>
+                        <constraints>
+                            <constraint firstAttribute="width" secondItem="xY8-Xq-UC1" secondAttribute="height" id="yHf-eC-Ekc"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥99.56" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="JdY-8D-Uh2" customClass="ZXUILabel" customModule="YDHYK" customModuleProvider="target">
+                        <rect key="frame" x="255" y="26" width="60" height="22.5"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="60" id="HSx-z8-fsc"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="typeIndex">
+                                <integer key="value" value="1"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="x1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m6v-0H-fCJ" customClass="ZXUILabel" customModule="YDHYK" customModuleProvider="target">
+                        <rect key="frame" x="213" y="26" width="40" height="22.5"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="40" id="UrC-mG-x4d"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="typeIndex">
+                                <integer key="value" value="1"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UmU-Zi-bLQ" customClass="ZXUILabel" customModule="YDHYK" customModuleProvider="target">
+                        <rect key="frame" x="92.5" y="10" width="40" height="22"/>
+                        <constraints>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="22" id="ulc-oD-eeQ"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="typeIndex">
+                                <integer key="value" value="1"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MZx-Ww-pea" customClass="ZXUILabel" customModule="YDHYK" customModuleProvider="target">
+                        <rect key="frame" x="92.5" y="34" width="30" height="17"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="typeIndex">
+                                <integer key="value" value="2"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="MZx-Ww-pea" secondAttribute="bottom" id="2Fd-Gn-W5n"/>
+                    <constraint firstItem="UmU-Zi-bLQ" firstAttribute="leading" secondItem="xY8-Xq-UC1" secondAttribute="trailing" constant="10" id="3Vm-cg-L5h"/>
+                    <constraint firstItem="UmU-Zi-bLQ" firstAttribute="top" secondItem="xY8-Xq-UC1" secondAttribute="top" constant="5" id="3kD-q0-Sug"/>
+                    <constraint firstItem="xY8-Xq-UC1" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="8wZ-8n-xab"/>
+                    <constraint firstItem="xY8-Xq-UC1" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="18" id="Gaj-17-plz"/>
+                    <constraint firstItem="m6v-0H-fCJ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="UmU-Zi-bLQ" secondAttribute="trailing" id="HV6-eR-n9M"/>
+                    <constraint firstItem="MZx-Ww-pea" firstAttribute="leading" secondItem="UmU-Zi-bLQ" secondAttribute="leading" id="IGi-OU-9cw"/>
+                    <constraint firstAttribute="bottom" secondItem="xY8-Xq-UC1" secondAttribute="bottom" constant="5" id="RXw-nF-zvo"/>
+                    <constraint firstItem="JdY-8D-Uh2" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="cAE-us-oe5"/>
+                    <constraint firstItem="m6v-0H-fCJ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="MZx-Ww-pea" secondAttribute="trailing" id="lmy-NP-XF6"/>
+                    <constraint firstAttribute="trailing" secondItem="JdY-8D-Uh2" secondAttribute="trailing" constant="5" id="r5O-a8-kyY"/>
+                    <constraint firstItem="m6v-0H-fCJ" firstAttribute="centerY" secondItem="JdY-8D-Uh2" secondAttribute="centerY" id="vpF-cx-6Wx"/>
+                    <constraint firstItem="MZx-Ww-pea" firstAttribute="top" secondItem="UmU-Zi-bLQ" secondAttribute="bottom" constant="2" id="ySz-XG-iQD"/>
+                    <constraint firstItem="JdY-8D-Uh2" firstAttribute="leading" secondItem="m6v-0H-fCJ" secondAttribute="trailing" constant="2" id="zXE-9q-RhI"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="imgDrugIcon" destination="xY8-Xq-UC1" id="un8-Ir-fUj"/>
+                <outlet property="lbBuyNum" destination="m6v-0H-fCJ" id="aaB-p5-fgL"/>
+                <outlet property="lbDrugName" destination="UmU-Zi-bLQ" id="gYA-Sx-mJU"/>
+                <outlet property="lbDrugSpec" destination="MZx-Ww-pea" id="6sg-LF-pPm"/>
+                <outlet property="lbPrice" destination="JdY-8D-Uh2" id="tTA-Lx-HoL"/>
+            </connections>
+            <point key="canvasLocation" x="26" y="52.5"/>
+        </tableViewCell>
+    </objects>
+</document>

@@ -1,0 +1,78 @@
+//
+//  ZXRemindListCell.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/23.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXRemindListCell: UICollectionViewCell {
+    
+    static let ZXRemindListCellID: String = "ZXRemindListCell"
+    
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var backView: ZXUIView!
+    @IBOutlet weak var checkBtn: UIButton!
+    @IBOutlet weak var drugTimeLb: UILabel!
+    @IBOutlet weak var titleLb: UILabel!
+    @IBOutlet weak var titleW: NSLayoutConstraint!
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+        self.tableView.register(UINib.init(nibName: String.init(describing: ZXDrugListCell.self), bundle: nil), forCellReuseIdentifier: ZXDrugListCell.ZXDrugListCellID)
+        
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+    }
+    
+    //MARK: - 查看详情
+    @IBAction func checkDetailBtnAction(_ sender: ZXUIButton) {
+        let detailView: ZXDrugDetailView = ZXDrugDetailView.loadNib()
+        ZXRootController.appWindow()?.addSubview(detailView)
+    }
+    
+    //MARK: - 修改时间
+    @IBAction func modifyTimeBtnAction(_ sender: ZXTitleButton) {
+        print("修改时间")
+    }
+    
+    //MARK: - Lazy
+    lazy var dataSource: NSMutableArray = {
+        let array: NSMutableArray = NSMutableArray.init(capacity: 5)
+        return array
+    }()
+
+}
+
+extension ZXRemindListCell: UITableViewDelegate {
+    
+}
+
+extension ZXRemindListCell: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell: ZXDrugListCell = tableView.dequeueReusableCell(withIdentifier: ZXDrugListCell.ZXDrugListCellID, for: indexPath) as! ZXDrugListCell
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 5
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        var rowH:CGFloat = 0.0
+        if indexPath.row >= 4 {
+            rowH = 8.0
+        }else{
+            rowH = 28.0
+        }
+        return rowH
+    }
+}

@@ -1,0 +1,121 @@
+//
+//  ZXDrugstoreListCell.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/7.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+protocol ZXDrugstoreListCellDelegate: NSObjectProtocol {
+    func didDrugstoreListCellJoinMemberAction(_ sender:UIButton,_ model: ZXDrugstoreListModel)
+    func didDrugstoreListCellLocationAction(_ sender:UIButton,_ model: ZXDrugstoreListModel)
+    func didDrugstoreListCellTelAction(_ sender:UIButton,_ model: ZXDrugstoreListModel)
+    func didDrugstoreListCellBuyAction(_ sender:UIButton,_ model: ZXDrugstoreListModel)
+}
+
+class ZXDrugstoreListCell: UITableViewCell {
+    
+    static let ZXDrugstoreListCellID: String = "ZXDrugstoreListCell"
+    weak var delegate: ZXDrugstoreListCellDelegate?
+    
+    @IBOutlet weak var buyBtn: ZXTitleButton!
+    @IBOutlet weak var joinBtn: UIButton!
+    @IBOutlet weak var iconImg: UIImageView!
+    @IBOutlet weak var titleLb: UILabel!
+    @IBOutlet weak var detailLb: UILabel!
+    @IBOutlet weak var locBtn: UIButton!
+    @IBOutlet weak var telBtn: UIButton!
+    @IBOutlet weak var VSeparLine: UIView!
+    @IBOutlet weak var HSeparLine: UIView!
+    
+    var storeModel: ZXDrugstoreListModel!
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        self.selectionStyle = .none
+        
+        
+        self.backgroundColor = UIColor.zx_subTintColor
+        
+        self.iconImg.layer.cornerRadius = self.iconImg.size.height*0.5
+        self.iconImg.layer.masksToBounds = true
+        
+        self.joinBtn.backgroundColor = UIColor.zx_tintColor
+        self.joinBtn.layer.cornerRadius = 5.0
+        self.joinBtn.layer.masksToBounds = true
+        self.joinBtn.titleLabel?.font = UIFont.zx_bodyFont
+        
+        self.buyBtn.titleLabel?.font = UIFont.zx_bodyFont
+        self.buyBtn.titleLabel?.textAlignment = .right
+        
+        self.VSeparLine.backgroundColor = UIColor.zx_borderColor
+        self.HSeparLine.backgroundColor = UIColor.zx_borderColor
+        
+        self.titleLb.textColor = UIColor.zx_textColorTitle
+        self.titleLb.font = UIFont.boldSystemFont(ofSize: UIFont.zx_titleFontSize)
+        
+        self.detailLb.textColor = UIColor.zx_textColorBody
+        
+        self.locBtn.setTitleColor(UIColor.zx_textColorBody, for: .normal)
+        
+        self.telBtn.setTitleColor(UIColor.zx_textColorBody, for: .normal)
+        
+        self.buyBtn.setTitleColor(UIColor.zx_tintColor, for: .normal)
+        
+    }
+    
+    func loadData(_ mode: ZXDrugstoreListModel) {
+        
+        self.storeModel = mode
+        
+        if mode.headPortraitStr.isEmpty == false {
+            self.iconImg.kf.setImage(with: URL.init(string: mode.headPortraitStr), placeholder: UIImage.Default.drug, options: nil, progressBlock: nil, completionHandler: nil)
+        }
+        
+        self.titleLb.text = mode.name
+        
+        self.detailLb.text = "\(mode.distance) \(mode.address)"
+        
+        if mode.isMember == 1 {
+            self.joinBtn.isHidden = true
+            self.buyBtn.isHidden = false
+        }else{
+            self.joinBtn.isHidden = false
+            self.buyBtn.isHidden = true
+        }
+    }
+    
+    @IBAction func locationBtnAction(_ sender: UIButton) {
+        if delegate != nil {
+            delegate?.didDrugstoreListCellLocationAction(sender, self.storeModel!)
+        }
+    }
+    
+    @IBAction func telBtnAction(_ sender: UIButton) {
+        if delegate != nil {
+            delegate?.didDrugstoreListCellTelAction(sender, self.storeModel!)
+        }
+    }
+    
+    @IBAction func joinMemberAction(_ sender: UIButton) {
+        if delegate != nil {
+            delegate?.didDrugstoreListCellJoinMemberAction(sender, self.storeModel!)
+        }
+    }
+    
+    @IBAction func buyBtnAction(_ sender: UIButton) {
+        if delegate != nil {
+            delegate?.didDrugstoreListCellBuyAction(sender, self.storeModel!)
+        }
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+
+        // Configure the view for the selected state
+    }
+    
+}

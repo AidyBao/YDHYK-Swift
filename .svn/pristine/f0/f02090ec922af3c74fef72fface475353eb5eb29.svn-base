@@ -1,0 +1,95 @@
+//
+//  ZXMemberCardRootViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/1.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+/// 卡.购药
+class ZXMemberCardRootViewController: ZXUIViewController {
+    //正在获取会员卡
+    var isFetchingCard: Bool = false
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.title = "卡·购药"
+        self.hidesBottomBarWhenPushed = false
+        
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.view.backgroundColor = UIColor.zx_tintColor
+        
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        self.requestForQueryMemberCard(true)
+    }
+    
+    func switchLoadView() {
+        if self.dataArray.count == 0 {//没有会员卡
+            
+        }else if self.dataArray.count == 1 {//只有一张会员卡
+            
+        }else if self.dataArray.count > 1 {//大于一张
+            
+        }else{
+            
+        }
+    }
+    
+    lazy var dataArray: NSMutableArray = {
+        let array: NSMutableArray = NSMutableArray.init(capacity: 5)
+        return array
+    }()
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+}
+
+extension ZXMemberCardRootViewController {
+    func requestForQueryMemberCard(_ showHUD:Bool) {
+        if self.isFetchingCard {
+            return
+        }
+        self.isFetchingCard = true
+        self.dataArray.removeAllObjects()
+        
+        if showHUD {
+            ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        }
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Card.myCard), params: nil, method: .post) { (succ, code, content, string, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            ZXEmptyView.hide(from: self.view)
+            self.isFetchingCard = false
+            if code == ZXAPI_SUCCESS {
+                if let data = content["data"] as? Array<Any>,data.count != 0 {
+                    self.dataArray = ZXMemberCardModel.mj_objectArray(withKeyValuesArray: data)
+                    self.switchLoadView()
+                }else{
+                    ZXEmptyView.show(in: self.view, type: .noData, text: "暂无相关数据", retry: {
+                        self.requestForQueryMemberCard(false)
+                    })
+                }
+            }else if code != ZXAPI_LOGIN_INVALID {
+                ZXEmptyView.show(in: self.view, type: .networkError, text: nil, retry: { [unowned self]  in
+                    ZXEmptyView.hide(from: self.view)
+                    self.requestForQueryMemberCard(false)
+                })
+            }
+        }
+    }
+}

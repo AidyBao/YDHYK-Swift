@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ZXDiscoverRootViewController" customModule="YDHYK" customModuleProvider="target">
+            <connections>
+                <outlet property="ccvTopMenu" destination="6rx-tZ-AAo" id="N1Z-k5-oXw"/>
+                <outlet property="ccvTopOffset" destination="5Xs-FY-zB0" id="HxP-Uj-0YE"/>
+                <outlet property="tblList" destination="Och-fm-ni9" id="J3U-xS-y6C"/>
+                <outlet property="topMenuContentView" destination="k6E-Pw-eOk" id="Paq-P2-8C6"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k6E-Pw-eOk">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="100"/>
+                    <subviews>
+                        <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="6rx-tZ-AAo">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="100"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="100" id="jdy-OY-yvo"/>
+                            </constraints>
+                            <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="Q9r-qZ-Ge3">
+                                <size key="itemSize" width="50" height="50"/>
+                                <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                            </collectionViewFlowLayout>
+                        </collectionView>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="100" id="3Eb-f3-4Pc"/>
+                        <constraint firstItem="6rx-tZ-AAo" firstAttribute="top" secondItem="k6E-Pw-eOk" secondAttribute="top" id="5Xs-FY-zB0"/>
+                        <constraint firstItem="6rx-tZ-AAo" firstAttribute="leading" secondItem="k6E-Pw-eOk" secondAttribute="leading" id="QZE-8Y-8BV"/>
+                        <constraint firstAttribute="trailing" secondItem="6rx-tZ-AAo" secondAttribute="trailing" id="p3H-Ew-OL2"/>
+                    </constraints>
+                </view>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="Och-fm-ni9" customClass="ZXDiscoverTableView" customModule="YDHYK" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                </tableView>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="Och-fm-ni9" secondAttribute="trailing" id="2uN-vk-1uT"/>
+                <constraint firstItem="k6E-Pw-eOk" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="9Rq-dV-Afb"/>
+                <constraint firstItem="k6E-Pw-eOk" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="9gP-Hb-23v"/>
+                <constraint firstAttribute="trailing" secondItem="k6E-Pw-eOk" secondAttribute="trailing" id="LKY-39-AVQ"/>
+                <constraint firstItem="Och-fm-ni9" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="SKu-da-eiz"/>
+                <constraint firstItem="Och-fm-ni9" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="jed-wf-bYf"/>
+                <constraint firstAttribute="bottom" secondItem="Och-fm-ni9" secondAttribute="bottom" id="krO-PQ-kuf"/>
+            </constraints>
+            <point key="canvasLocation" x="24.5" y="52.5"/>
+        </view>
+    </objects>
+</document>

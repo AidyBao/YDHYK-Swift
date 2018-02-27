@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="ZXDataView" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nQb-A5-9UU">
+                    <rect key="frame" x="0.0" y="465" width="375" height="202"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Edg-BY-hWu">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="40"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="选择用药时间" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VCt-9e-v3c">
+                                    <rect key="frame" x="135" y="0.0" width="104" height="40"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4IS-yf-Xe9">
+                                    <rect key="frame" x="10" y="0.0" width="50" height="40"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" constant="50" id="8VX-bW-N1Y"/>
+                                    </constraints>
+                                    <state key="normal" title="取消"/>
+                                    <connections>
+                                        <action selector="cancelBtnAction:" destination="iN0-l3-epB" eventType="touchUpInside" id="i8K-99-iel"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bYL-rS-fmA">
+                                    <rect key="frame" x="315" y="0.0" width="50" height="40"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" constant="50" id="4am-IU-qhG"/>
+                                    </constraints>
+                                    <state key="normal" title="确定"/>
+                                    <connections>
+                                        <action selector="confirmBtnAction:" destination="iN0-l3-epB" eventType="touchUpInside" id="lia-H6-PqD"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstItem="bYL-rS-fmA" firstAttribute="top" secondItem="Edg-BY-hWu" secondAttribute="top" id="1c0-XA-RXI"/>
+                                <constraint firstItem="VCt-9e-v3c" firstAttribute="top" secondItem="Edg-BY-hWu" secondAttribute="top" id="4F2-i5-hbD"/>
+                                <constraint firstItem="4IS-yf-Xe9" firstAttribute="leading" secondItem="Edg-BY-hWu" secondAttribute="leading" constant="10" id="6Q1-bg-fAW"/>
+                                <constraint firstAttribute="height" constant="40" id="6ZK-uX-w1I"/>
+                                <constraint firstAttribute="bottom" secondItem="VCt-9e-v3c" secondAttribute="bottom" id="9au-bk-bxD"/>
+                                <constraint firstItem="VCt-9e-v3c" firstAttribute="centerX" secondItem="Edg-BY-hWu" secondAttribute="centerX" id="UaY-gG-JHL"/>
+                                <constraint firstAttribute="bottom" secondItem="4IS-yf-Xe9" secondAttribute="bottom" id="bqT-oZ-4N8"/>
+                                <constraint firstAttribute="bottom" secondItem="bYL-rS-fmA" secondAttribute="bottom" id="fYc-x2-RIK"/>
+                                <constraint firstAttribute="trailing" secondItem="bYL-rS-fmA" secondAttribute="trailing" constant="10" id="oDg-4Q-Pje"/>
+                                <constraint firstItem="4IS-yf-Xe9" firstAttribute="top" secondItem="Edg-BY-hWu" secondAttribute="top" id="tXf-dn-Hyx"/>
+                            </constraints>
+                        </view>
+                        <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Akj-GD-735">
+                            <rect key="frame" x="0.0" y="40" width="375" height="162"/>
+                        </pickerView>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="202" id="6MD-MX-KVW"/>
+                        <constraint firstItem="Edg-BY-hWu" firstAttribute="top" secondItem="nQb-A5-9UU" secondAttribute="top" id="AWV-nJ-UgA"/>
+                        <constraint firstAttribute="bottom" secondItem="Akj-GD-735" secondAttribute="bottom" id="Md4-Ql-ins"/>
+                        <constraint firstAttribute="trailing" secondItem="Edg-BY-hWu" secondAttribute="trailing" id="Y7w-d2-ig3"/>
+                        <constraint firstItem="Akj-GD-735" firstAttribute="top" secondItem="Edg-BY-hWu" secondAttribute="bottom" id="ZD5-es-XVd"/>
+                        <constraint firstItem="Edg-BY-hWu" firstAttribute="leading" secondItem="nQb-A5-9UU" secondAttribute="leading" id="cDT-Np-j5J"/>
+                        <constraint firstAttribute="trailing" secondItem="Akj-GD-735" secondAttribute="trailing" id="fHc-tl-akQ"/>
+                        <constraint firstItem="Akj-GD-735" firstAttribute="leading" secondItem="nQb-A5-9UU" secondAttribute="leading" id="hro-lp-INm"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="nQb-A5-9UU" secondAttribute="bottom" id="EHJ-FF-dex"/>
+                <constraint firstItem="nQb-A5-9UU" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="EJs-On-dM5"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="nQb-A5-9UU" secondAttribute="trailing" id="QeO-M3-Jnn"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="cancelBtn" destination="4IS-yf-Xe9" id="PrS-9G-iUJ"/>
+                <outlet property="confirmBtn" destination="bYL-rS-fmA" id="Bhl-vm-uxV"/>
+                <outlet property="contentView" destination="nQb-A5-9UU" id="Sr2-hN-pfs"/>
+                <outlet property="pickerView" destination="Akj-GD-735" id="rbo-NL-q3Y"/>
+                <outlet property="titleLb" destination="VCt-9e-v3c" id="G0b-3C-m9U"/>
+                <outlet property="topView" destination="Edg-BY-hWu" id="abA-Od-skG"/>
+            </connections>
+            <point key="canvasLocation" x="25.5" y="51.5"/>
+        </view>
+    </objects>
+</document>

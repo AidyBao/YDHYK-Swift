@@ -1,0 +1,126 @@
+//
+//  ZXUserInfoViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/2.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXUserInfoViewController: UIViewController {
+    
+    @IBOutlet weak var titleLB: UILabel!
+    
+    @IBOutlet weak var femaleImgBtn: UIButton!
+    @IBOutlet weak var manImgBtn: UIButton!
+    
+    @IBOutlet weak var femaleBtn: UIButton!
+    @IBOutlet weak var manBtn: UIButton!
+    
+    @IBOutlet weak var selectedTitleLB: UILabel!
+    
+    @IBOutlet weak var pickerView: UIPickerView!
+    
+    @IBOutlet weak var commitBtn: ZXLoginButton!
+    
+    /** 性别
+     *0代表女
+     *1代表男
+     */
+    var gender: Int = 0
+    /** 年龄段:
+     *0代表20以下
+     *1代表20-30岁
+     *2代表30-40岁
+     *3代表40-50岁
+     *4代表50岁以上
+     */
+    var ageGroup: String = ""
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        
+    }
+    
+    @IBAction func selectedSexAction(_ sender: UIButton) {
+        if sender == self.femaleImgBtn || sender == self.femaleBtn {
+            if sender.isSelected == false {
+                self.femaleImgBtn.isSelected = !sender.isSelected
+                self.femaleBtn.isSelected = sender.isSelected
+                
+                //改变男性头像颜色
+                self.manImgBtn.isSelected = !sender.isSelected;
+                self.manImgBtn.isSelected = !sender.isSelected;
+                //打开“完成”按钮点击事件
+                self.commitBtn.isEnabled = true;
+                
+                self.gender = 0
+            }else{
+                self.femaleImgBtn.isSelected = !sender.isSelected;
+                self.femaleBtn.isSelected = sender.isSelected;
+                //关闭“完成”按钮点击事件
+                self.commitBtn.isEnabled = false;
+            }
+        }else if sender == self.manImgBtn || sender == self.manBtn {
+            if sender.isSelected == false {
+                self.manImgBtn.isSelected = !sender.isSelected
+                self.manBtn.isSelected = sender.isSelected
+                
+                //改变男性头像颜色
+                self.femaleImgBtn.isSelected = !sender.isSelected;
+                self.femaleBtn.isSelected = !sender.isSelected;
+                //打开“完成”按钮点击事件
+                self.commitBtn.isEnabled = true;
+                
+                self.gender = 1
+            }else{
+                self.manImgBtn.isSelected = !sender.isSelected;
+                self.manBtn.isSelected = sender.isSelected;
+                //关闭“完成”按钮点击事件
+                self.commitBtn.isEnabled = false;
+            }
+        }
+    }
+    
+    @IBAction func commitBtnAction(_ sender: UIButton) {
+    }
+    
+    lazy var dataArray: NSMutableArray = {
+        let arr: NSMutableArray = NSMutableArray.init(capacity: 5)
+        return arr
+    }()
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+}
+
+extension ZXUserInfoViewController:UIPickerViewDelegate {
+    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+        
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        
+    }
+}
+
+extension ZXUserInfoViewController:UIPickerViewDataSource {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return self.dataArray.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
+        return 34
+    }
+}
+
+

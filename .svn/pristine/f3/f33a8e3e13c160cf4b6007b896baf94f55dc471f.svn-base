@@ -1,0 +1,22 @@
+//
+//  ZXUCOrderDrugModel.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/6.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+/// 个人中心-订单商品Model
+/// ZXUserCenterOrderDrugModel
+@objcMembers class ZXUCOrderDrugModel: NSObject {
+    var drugId = ""
+    var drugName = ""       //药品名称
+    var packingSpec = ""    //包装规格
+    //var price: Double = 0 //单价
+    var priceStr = ""       //处理后价格
+    var num: Int = 0        //数量
+    var attachStr = ""      //商品图片
+    var attachFilesStr = "" //商品图片
+    var approvalNumber = ""
+}

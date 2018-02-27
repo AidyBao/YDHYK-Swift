@@ -1,0 +1,432 @@
+//
+//  ZXUCOrderDetailViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/7.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+/// 个人中心-订单详情
+class ZXUCOrderDetailViewController: ZXUIViewController {
+
+    @IBOutlet weak var tblList: UITableView!
+    @IBOutlet weak var btnControlButton1: UIButton!
+    @IBOutlet weak var btnControlButton2: UIButton!
+    
+    @IBOutlet weak var controlButton1Width: NSLayoutConstraint!
+    @IBOutlet weak var bottomMenuView: UIView!
+    @IBOutlet weak var lbTotalInfo: UILabel!
+    var orderId: String?
+    var orderDetailModel: ZXUCOrderDetailModel?
+    
+    let infoTitles = ["收货人","联系电话","收货地址","订单号","支付方式","配送方式","下单时间"]
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "订单详情"
+        // Do any additional setup after loading the view.
+        
+        self.bottomMenuView.isHidden = true
+        self.lbTotalInfo.font = UIFont.zx_titleFont
+        self.lbTotalInfo.textColor = UIColor.zx_textColorTitle
+        
+        btnControlButton1.layer.cornerRadius = 5
+        btnControlButton1.layer.masksToBounds = true
+        btnControlButton1.layer.borderWidth = 1.0
+        btnControlButton1.titleLabel?.font = UIFont.zx_titleFont(14)
+        btnControlButton1.addTarget(self, action: #selector(controlButton1Action), for: .touchUpInside)
+        
+        btnControlButton2.layer.cornerRadius = 5
+        btnControlButton2.layer.masksToBounds = true
+        btnControlButton2.layer.borderWidth = 1.0
+        btnControlButton2.titleLabel?.font = UIFont.zx_titleFont(14)
+        btnControlButton2.addTarget(self, action: #selector(controlButton2Action), for: .touchUpInside)
+        self.lbTotalInfo.text = nil
+        self.btnControlButton1.isHidden = true
+        self.btnControlButton2.isHidden = true
+
+        self.tblList.backgroundColor = UIColor.zx_subTintColor
+        self.tblList.register(UINib.init(nibName: ZXUCOrderStatusCell.NibName, bundle: nil), forCellReuseIdentifier: ZXUCOrderStatusCell.reuseIdentifier)//状态-无进度
+        self.tblList.register(UINib.init(nibName: ZXUCOrderStatusWithProgressCell.NibName, bundle: nil), forCellReuseIdentifier: ZXUCOrderStatusWithProgressCell.reuseIdentifier)//状态-有进度
+        self.tblList.register(UINib.init(nibName: ZXUCOderStoreCell.NibName, bundle: nil), forCellReuseIdentifier: ZXUCOderStoreCell.reuseIdentifier)
+         self.tblList.register(UINib.init(nibName: ZXUCOrderDrugCell.NibName, bundle: nil), forCellReuseIdentifier: ZXUCOrderDrugCell.reuseIdentifier)
+         self.tblList.register(UINib.init(nibName: ZXUCOrderNoneControlFooterCell.NibName, bundle: nil), forCellReuseIdentifier: ZXUCOrderNoneControlFooterCell.reuseIdentifier)
+        self.tblList.register(UINib.init(nibName: ZXUCOrderLRTextCell.NibName, bundle: nil), forCellReuseIdentifier: ZXUCOrderLRTextCell.reuseIdentifier)
+        
+        self.tblList.zx_addHeaderRefresh(showGif: true, target: self, action: #selector(zx_refresh))
+        self.tblList.mj_header.beginRefreshing()
+    }
+    
+    override func zx_refresh() {
+        loadOrderDetail(showHUD: false)
+    }
+    
+    func loadOrderDetail(showHUD: Bool) {
+        if let orderId = orderId {
+            if showHUD {
+                ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+            }
+            
+            ZXUCOrderViewModel.orderDetail(with: orderId) { (success, code, model, errorMsg) in
+                self.tblList.mj_header.endRefreshing()
+                ZXHUD.hide(for: self.view, animated: true)
+                if success {
+                    self.orderDetailModel = model
+                    self.reloadUI()
+                } else {
+                    if code != ZXAPI_LOGIN_INVALID {
+                        ZXHUD.showFailure(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                    }
+                }
+            }
+        } else {
+            ZXHUD.showFailure(in: self.view, text: "订单ID为空", delay: ZX.HUDDelay)
+        }
+    }
+    
+    fileprivate func reloadUI() {
+        if let model = self.orderDetailModel {
+            self.bottomMenuView.isHidden = false
+            self.lbTotalInfo.text = "合计:\(model.originalPriceStr.zx_priceString())元"
+            self.reloadButton(with: model.zx_status)
+            if !model.tel.isEmpty {
+                self.zx_addNavBarButtonItems(imageNames: ["hOrder_callphone"], useOriginalColor: false, at: .right)
+            }
+        }
+        self.tblList.reloadData()
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        if let model = self.orderDetailModel {
+            if !model.tel.isEmpty {
+                ZXCommonUtils.call(model.tel, failed: { (errorMsg) in
+                    ZXHUD.showText(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                })
+            }
+        }
+    }
+}
+//MARK: - BottomMenuControl
+extension ZXUCOrderDetailViewController {
+    @objc func controlButton1Action() {
+        if let model = self.orderDetailModel {
+            var controlType: ZXOrderControlType = .none
+            switch model.zx_status {
+                case .waitPay:  //待付款 (Control1:立即付款)
+                    controlType = .toPay
+                case .waitTake: //待提货 (Control1:查看提货码)
+                    controlType = .reviewCode
+                case .waitDispatch: //待发货 (Control1:查看提货码)
+                    controlType = .reviewCode
+                case .dispatched: //待收货 (Control1: 查看提货码)
+                    controlType = .reviewCode
+                case .finished: //已完成 (Control1: 删除订单)
+                    controlType = .delete
+                case .canceled: //已取消 (Control1: 删除订单)
+                    controlType = .delete
+                case .refunding: //退款中 (Control1: 无操作)
+                    controlType = .none
+                case .preparing: //待备货 (Control1: 取消订单)
+                    controlType = .cancel
+                default:
+                    break
+            }
+            self.zxUCOrderControlerAction(with: controlType, orderId: model.orderId)
+        }
+    }
+    
+    @objc func controlButton2Action() {
+        if let model = self.orderDetailModel {
+            var controlType: ZXOrderControlType = .none
+            switch model.zx_status {
+                case .waitPay:  //待付款 (Control2:取消订单)
+                    controlType = .cancel
+                case .waitTake: //待提货 (Control2:取消订单)
+                    controlType = .cancel
+                case .waitDispatch: //待发货 (Control2:取消订单)
+                    controlType = .cancel
+                case .dispatched: //待收货 (Control2: 确认收货)
+                    controlType = .confirmSign
+                case .finished: //已完成 (Control2: 无操作)
+                    controlType = .none
+                case .canceled: //已取消 (Control2: 无操作)
+                    controlType = .none
+                case .refunding: //退款中 (Control1: 无操作)
+                    controlType = .none
+                case .preparing: //待备货 (Control2: 无操作)
+                    controlType = .none
+                default:
+                    break
+            }
+            self.zxUCOrderControlerAction(with: controlType, orderId: model.orderId)
+        }
+    }
+    
+    //MARK: - 订单操作
+    func zxUCOrderControlerAction(with type: ZXOrderControlType, orderId: String) {
+        switch type {
+            case .toPay:
+                print("支付")
+            case .reviewCode://查看提货码
+                let reviewPickupCodeVC = ZXReviewPickupCodeViewController()
+                reviewPickupCodeVC.orderId = orderId
+                self.navigationController?.pushViewController(reviewPickupCodeVC, animated: true)
+            case .confirmSign://确认收货
+                self.changeOrderStatus(to: .finished, orderId: orderId)
+            case .cancel://取消订单
+                self.changeOrderStatus(to: .canceled, orderId: orderId)
+            case .delete://删除订单 置为无效
+                self.changeOrderStatus(to: .invalid, orderId: orderId)
+            default:
+                break
+        }
+
+    }
+    
+    fileprivate func changeOrderStatus(to status: ZXUCOrderStatus,orderId: String) {
+        var controlTitle = "订单操作..."
+        var buttons = ["放弃","确定"]
+        switch status {
+        case .invalid:
+            controlTitle = "确定删除订单?"
+            buttons = ["放弃","确定"]
+        case .canceled:
+            controlTitle = "确定取消订单?"
+            buttons = ["放弃","确定"]
+        case .finished:
+            controlTitle = "请确保已经收到您的物品?"
+            buttons = ["稍后","确定"]
+        default:
+            break
+        }
+        if status == .invalid || status == .canceled || status == .finished {
+            ZXAlertUtils.showActionSheet(withTitle: "提示", message: controlTitle, buttonTexts: buttons, cancelText: nil) { (index) in
+                if index == 1 {
+                    ZXHUD.showLoading(in: self.view, text: "操作中", delay: 0)
+                    ZXUCOrderViewModel.changeOrder(orderId, to: status, completion: { (success, code, errorMsg) in
+                        ZXHUD.hide(for: self.view, animated: true)
+                        if success {
+                            NotificationCenter.zxpost.orderStatusUpdated()
+                            self.navigationController?.popViewController(animated: true)
+                        } else {
+                            if code != ZXAPI_LOGIN_INVALID {
+                                ZXHUD.showFailure(in: self.view, text: errorMsg, delay: ZX.HUDDelay)
+                            }
+                        }
+                    })
+                }
+            }
+        }
+    }
+    
+    fileprivate func reloadButton(with orderStatus: ZXUCOrderStatus) {
+        self.btnControlButton1.isHidden = false
+        self.btnControlButton2.isHidden = false
+        self.controlButton1Width.constant = 80
+        
+        btnControlButton1.backgroundColor = UIColor.zx_tintColor
+        btnControlButton1.layer.borderColor = UIColor.zx_tintColor.cgColor
+        btnControlButton1.setTitleColor(.white, for: .normal)
+        
+        btnControlButton2.backgroundColor = UIColor.white
+        btnControlButton2.layer.borderColor = UIColor.zx_tintColor.cgColor
+        btnControlButton2.setTitleColor(UIColor.zx_tintColor, for: .normal)
+        
+        switch orderStatus {
+        case .waitDispatch,.waitTake: //待提货 (Control: 取消订单、查看提货码) //待发货 (Control: 取消订单、查看提货码)
+            controlButton1Width.constant = 94
+            btnControlButton1.setTitle("查看提货码", for: .normal)
+            btnControlButton1.backgroundColor = UIColor.zx_colorRGB(53, 167, 144, 1.0)
+            btnControlButton1.layer.borderColor = UIColor.zx_colorRGB(53, 167, 144, 1.0).cgColor
+            
+            btnControlButton2.setTitle("取消订单", for: .normal)
+        case .waitPay:       /*待支付*/
+            btnControlButton1.setTitle("立即付款", for: .normal)
+            btnControlButton2.setTitle("取消订单", for: .normal)
+            
+        case .dispatched:    /*已发货-UI待收货*/
+            controlButton1Width.constant = 94
+            btnControlButton1.setTitle("查看提货码", for: .normal)
+            btnControlButton1.backgroundColor = UIColor.zx_colorRGB(53, 167, 144, 1.0)
+            btnControlButton1.layer.borderColor = UIColor.zx_colorRGB(53, 167, 144, 1.0).cgColor
+            
+            btnControlButton2.setTitle("确认收货", for: .normal)
+        case .canceled,.finished:      //已完成 (Control: 删除订单) //已取消 (Control: 删除订单)
+            btnControlButton1.setTitle("删除订单", for: .normal)
+            btnControlButton1.backgroundColor = UIColor.white
+            btnControlButton1.layer.borderColor = UIColor.zx_tintColor.cgColor
+            btnControlButton1.setTitleColor(UIColor.zx_tintColor, for: .normal)
+            
+            btnControlButton2.isHidden = true
+        case .preparing:    /*备货中-取消订单*/
+            btnControlButton1.setTitle("取消订单", for: .normal)
+            btnControlButton1.backgroundColor = UIColor.white
+            btnControlButton1.layer.borderColor = UIColor.zx_tintColor.cgColor
+            btnControlButton1.setTitleColor(UIColor.zx_tintColor, for: .normal)
+            
+            btnControlButton2.isHidden = true
+        default: //refunding invalid all
+            self.btnControlButton1.isHidden = true
+            self.btnControlButton2.isHidden = true
+        }
+    }
+
+}
+
+//MARK: - UITableViewDelegate
+extension ZXUCOrderDetailViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if let model = self.orderDetailModel {
+            if indexPath.section == 1 {
+                if indexPath.row == 0 {//店铺
+                    let storeVC = ZXStoreRootViewController.configVC(storeId: model.drugstoreId, memberId: ZXUser.user.memberId, token: ZXUser.user.userToken)
+                    self.navigationController?.pushViewController(storeVC, animated: true)
+                } else if indexPath.row < model.orderDetailList.count + 1 {//药品
+                    let drugDetailVC = ZXDrugDetailInfoViewController()
+                    let drug = model.orderDetailList[indexPath.row - 1]
+                    let shortModel = ZXDrugModel()
+                    shortModel.baseDrugId = drug.drugId
+                    shortModel.approvalNumber = drug.approvalNumber
+                    shortModel.drugstoreId = model.drugstoreId
+                    drugDetailVC.goodsShortModel = shortModel
+                    self.navigationController?.pushViewController(drugDetailVC, animated: true)
+                }
+            }
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if let model = self.orderDetailModel {
+            switch indexPath.section {
+            case 0://状态
+                if model.zx_status == .waitPay || model.zx_status == .canceled || model.zx_status == .refunding {
+                  return ZXUCOrderStatusCell.height
+                }
+                return ZXUCOrderStatusWithProgressCell.height
+            case 1://商品信息
+                switch indexPath.row {
+                case 0:
+                    return ZXUCOderStoreCell.height
+                case model.orderDetailList.count + 1:
+                    return ZXUCOrderNoneControlFooterCell.height
+                default:
+                    return ZXUCOrderDrugCell.height
+                }
+            case 2://支付方式、订单号、收货地址等
+                if indexPath.row == 2 { //收货地址
+                    return 40
+                }
+            default:
+                break
+            }
+
+        }
+        return 30
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 10
+    }
+}
+
+//MARK: - UITableViewDataSource
+extension ZXUCOrderDetailViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if let model = self.orderDetailModel {
+            switch indexPath.section {
+            case 0://状态
+                if model.zx_status == .waitPay || model.zx_status == .canceled || model.zx_status == .refunding {
+                    let cell = tableView.dequeueReusableCell(withIdentifier: ZXUCOrderStatusCell.reuseIdentifier, for: indexPath) as! ZXUCOrderStatusCell
+                    cell.reloadData(model: model)
+                    return cell
+                }
+                let cell = tableView.dequeueReusableCell(withIdentifier: ZXUCOrderStatusWithProgressCell.reuseIdentifier, for: indexPath) as! ZXUCOrderStatusWithProgressCell
+                cell.reloadData(model: model)
+                return cell
+            case 1://商品信息
+                switch indexPath.row {
+                case 0:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: ZXUCOderStoreCell.reuseIdentifier, for: indexPath) as! ZXUCOderStoreCell
+                    cell.reloadData(model: model)
+                    return cell
+                case model.orderDetailList.count + 1:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: ZXUCOrderNoneControlFooterCell.reuseIdentifier, for: indexPath) as! ZXUCOrderNoneControlFooterCell
+                    cell.reloadData(model: model)
+                    return cell
+                default:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: ZXUCOrderDrugCell.reuseIdentifier, for: indexPath) as! ZXUCOrderDrugCell
+                    //第一行为店铺
+                    cell.reloadData(model: model.orderDetailList[indexPath.row - 1])
+                    return cell
+                }
+            case 2://支付方式、订单号、收货地址等
+                let cell = tableView.dequeueReusableCell(withIdentifier: ZXUCOrderLRTextCell.reuseIdentifier, for: indexPath) as! ZXUCOrderLRTextCell
+                cell.lbLeftText.text = infoTitles[indexPath.row]
+                switch indexPath.row {
+                case 0://收货人
+                    cell.lbRightText.text =  model.consignee
+                case 1://联系电话
+                    cell.lbRightText.text =  model.tel
+                case 2://收货地址
+                    if model.zx_receiveType == .selfTake {
+                        cell.lbLeftText.text = "自提地址"
+                        cell.lbRightText.text =  model.drugstoreAddress//自提地址
+                    } else {
+                        cell.lbRightText.text =  model.address//送货地址
+                    }
+                case 3://订单编号
+                     cell.lbRightText.text =  model.orderNo
+                case 4://支付方式
+                    cell.lbRightText.text =  model.paymentMethodStr
+                case 5://配送方式
+                    if model.zx_receiveType == .selfTake {
+                        cell.lbRightText.text =  "到店自提"
+                    } else {
+                        cell.lbRightText.text =  "送药上门"
+                    }
+                case 6://下单时间
+                    cell.lbRightText.text =  model.orderDateStr
+                default:
+                    cell.lbLeftText.text = nil
+                    cell.lbRightText.text =  nil
+                }
+                return cell
+            default:
+                break
+            }
+        }
+        let cell = tableView.dequeueReusableCell(withIdentifier: ZXUCOrderLRTextCell.reuseIdentifier, for: indexPath) as! ZXUCOrderLRTextCell
+        cell.lbLeftText.text = nil
+        cell.lbRightText.text =  nil
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if let model = self.orderDetailModel {
+            switch section {
+                case 0://状态
+                    return 1
+                case 1://商品信息
+                    return 1 + model.orderDetailList.count + 1
+                case 2://支付方式、订单号、收货地址等
+                    return 7
+                default:
+                    break
+            }
+        }
+        return 0
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 3
+    }
+}
+

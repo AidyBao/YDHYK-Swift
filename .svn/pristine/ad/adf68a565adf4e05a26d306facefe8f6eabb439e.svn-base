@@ -1,0 +1,49 @@
+//
+//  ZXAddNewReportAnalyseViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/16.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+
+/// 新增化验单
+class ZXAddNewReportAnalyseViewController: ZXUIViewController {
+
+    @IBOutlet weak var VTips: UIView!
+    @IBOutlet weak var topBackView: UIView!
+    @IBOutlet weak var tblReportItem: UITableView!
+    @IBOutlet weak var searchResultBackView: UIView!
+    @IBOutlet weak var maskView: UIView!
+    
+    @IBOutlet weak var lbTipsInfo: UILabel!
+    @IBOutlet weak var tipsViewHeight: NSLayoutConstraint!
+    
+    @IBOutlet weak var topBackHeight: NSLayoutConstraint! // 110
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        self.title = "分析记录"
+        // Do any additional setup after loading the view.
+        self.zx_addNavBarButtonItems(textNames: ["模板"], font: nil, color: nil, at: .right)
+    }
+    //MARK: - Clear Action
+    @IBAction func clearAction(_ sender: UIButton) {
+        
+    }
+    //MARK: - StartAnalyseAction
+    @IBAction func startAnalyse(_ sender: UIButton) {
+        
+    }
+    //MARK: - Report List
+    @IBAction func reportListAction(_ sender: UIButton) {
+        let list = ZXReportAnalyseListViewController()
+        self.navigationController?.pushViewController(list, animated: true)
+    }
+    
+    @IBAction func reviewSourceImage(_ sender: UIButton) {
+    }
+}

@@ -1,0 +1,488 @@
+//
+//  ZXCheckItemInputViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+typealias ZXRefrenceValueCallBack = (_ type: ZXItemValueType, _ minRef: String?, _ maxRef: String?, _ refValue: String?, _ index: Int) -> Void
+typealias ZXResultValueCallBack = (_ type: ZXItemValueType, _ resultValue: String?, _ index: Int) -> Void
+
+enum ZXItemScenceType {
+    case typeChoose         //数据类型选择
+    case refrenceChoose     //参考值选择
+    case refrenceInput      //参考值输入
+    case resultChoose       //结果值选择
+    case resultInput        //结果值输入
+    case none
+}
+
+enum ZXDateInputValueType {
+    case refrence
+    case result
+    case none
+}
+
+class ZXCheckItemInputViewController: ZXUIViewController, UITextFieldDelegate {
+    
+    var refrenceCallBack: ZXRefrenceValueCallBack?
+    var resultCallBack: ZXResultValueCallBack?
+    
+    var refrenceValueIndex = 0
+    var resultValueIndex = 0
+    var minRefValue: String?
+    var maxRefValue: String?
+    var resultValue: String?
+    var lastView: UIView?
+    
+    var fTypeChooseHeight: CGFloat = 0
+    var fRefrenceValueChooseHeight: CGFloat = 0
+    var fResultValueChooseHeight: CGFloat = 0
+    
+    var typeIndex = 0 // 决定-选择值/输入值的类型
+    var dataInputType: ZXDateInputValueType = .none
+    var chooseTypeList: Array<ZXItemInputModel> = [] {
+        didSet {
+            var count = chooseTypeList.count
+            if  count < 3 {
+                if count > 6 {
+                    count = 6
+                }
+                fTypeChooseHeight = CGFloat(count * 48 + 40)
+            } else {
+                fTypeChooseHeight = 180
+                fRefrenceValueChooseHeight = 180
+                fResultValueChooseHeight = 180
+            }
+        }
+    }
+    
+    @IBOutlet weak var maskView: UIView!
+    //MARK: - 输入类型选择视图
+    @IBOutlet weak var typeChooseView: UIView!
+    @IBOutlet weak var tblTypeList: UITableView!
+    @IBOutlet weak var typeChooseViewHeight: NSLayoutConstraint!
+    //MARK: - 参考值选择视图
+    @IBOutlet weak var refrenceChooseValueView: UIView!
+    @IBOutlet weak var refrenceChooseViewHeight: NSLayoutConstraint!
+    @IBOutlet weak var tblRefrenceChoose: UITableView!
+    //MARK: - 参考值输入视图
+    //≥:仅填写最小值,≤:仅填写最大值
+    @IBOutlet weak var refrenceInputView: UIView!
+    @IBOutlet weak var refrenceInputViewHeight: NSLayoutConstraint!
+    @IBOutlet weak var txtMinRefrenceValue: UITextField!
+    @IBOutlet weak var txtMaxRefrenceValue: UITextField!
+    @IBOutlet weak var refrenceInputViewBottom: NSLayoutConstraint!
+    //MARK: - 结果选择
+    @IBOutlet weak var resultValueChooseView: UIView!
+    @IBOutlet weak var tblResultChoose: UITableView!
+    @IBOutlet weak var resultChooseViewHeight: NSLayoutConstraint!
+    
+    //MARK: - 结果输入
+    @IBOutlet weak var resultValueInput: UIView!
+    @IBOutlet weak var resultInputViewHeight: NSLayoutConstraint!
+    @IBOutlet weak var txtResultValue: UITextField!
+    @IBOutlet weak var resultInputViewBottom: NSLayoutConstraint!
+    
+    
+    static func showRefrenceDataInput(uponeon vc: UIViewController,
+                                       typeIndex: Int,
+                                       completion: ZXRefrenceValueCallBack?) {
+        let intpuVC = ZXCheckItemInputViewController()
+        intpuVC.refrenceCallBack = completion
+        intpuVC.typeIndex = typeIndex
+        intpuVC.dataInputType = .refrence
+        intpuVC.chooseTypeList = self.itemModelList
+        vc.present(intpuVC, animated: true, completion: nil)
+    }
+    
+    static func showResultDataInput(unponon vc: UIViewController,
+                                    typeIndex: Int,
+                                    completion: ZXResultValueCallBack?) {
+        let intpuVC = ZXCheckItemInputViewController()
+        intpuVC.resultCallBack = completion
+        intpuVC.typeIndex = typeIndex
+        intpuVC.dataInputType = .result
+        intpuVC.chooseTypeList = self.itemModelList
+        vc.present(intpuVC, animated: true, completion: nil)
+
+    }
+    static var _itemModelList : Array<ZXItemInputModel>?
+    static var itemModelList: Array<ZXItemInputModel>  {
+        get {
+            if _itemModelList == nil {
+                _itemModelList = []
+                let model1 = ZXItemInputModel()
+                model1.name = "数值"
+                model1.type = .input
+                _itemModelList?.append(model1)
+                
+                let model2 = ZXItemInputModel()
+                model2.name = "阴性/阳性"
+                model2.type = .choose
+                model2.chooseList = ["阴性", "阳性"]
+                _itemModelList?.append(model2)
+                
+                let model3 = ZXItemInputModel()
+                model3.name = "+/-"
+                model3.type = .choose
+                model3.chooseList = ["-", "+"]
+                _itemModelList?.append(model3)
+            }
+            return _itemModelList!
+        }
+    }
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.modalPresentationStyle = .custom
+        self.transitioningDelegate = self
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        self.view.backgroundColor = .clear
+        //类型选择
+        self.tblTypeList.register(UINib.init(nibName: ZXCheckSelectCell.NibName, bundle: nil), forCellReuseIdentifier: "cell1")
+        //参考值 - 选择
+        self.tblRefrenceChoose.register(UINib.init(nibName: ZXCheckSelectCell.NibName, bundle: nil), forCellReuseIdentifier: "cell2")
+        //结果值 - 选择
+        self.tblResultChoose.register(UINib.init(nibName: ZXCheckSelectCell.NibName, bundle: nil), forCellReuseIdentifier: "cell3")
+        
+        self.txtResultValue.backgroundColor = UIColor.zx_borderColor
+        self.txtResultValue.textColor = UIColor.zx_textColorTitle
+        self.txtResultValue.font = UIFont.zx_subTitleFont
+        self.txtResultValue.delegate = self
+        self.txtResultValue.layer.cornerRadius = 5
+        self.txtResultValue.layer.masksToBounds = true
+        
+        self.txtMinRefrenceValue.backgroundColor = UIColor.zx_borderColor
+        self.txtMinRefrenceValue.textColor = UIColor.zx_textColorTitle
+        self.txtMinRefrenceValue.font = UIFont.zx_subTitleFont
+        self.txtMinRefrenceValue.layer.cornerRadius = 5
+        self.txtMinRefrenceValue.delegate = self
+        self.txtMinRefrenceValue.layer.masksToBounds = true
+        
+        self.txtMaxRefrenceValue.backgroundColor = UIColor.zx_borderColor
+        self.txtMaxRefrenceValue.textColor = UIColor.zx_textColorTitle
+        self.txtMaxRefrenceValue.font = UIFont.zx_subTitleFont
+        self.txtMaxRefrenceValue.layer.cornerRadius = 5
+        self.txtMaxRefrenceValue.delegate = self
+        self.txtMaxRefrenceValue.layer.masksToBounds = true
+        
+        self.zx_addKeyboardNotification()
+        
+        self.hideAllViews()
+        if dataInputType == .refrence {
+            self.changeScenceBy(type: .typeChoose)
+        } else {//选种类型，并跳转到下一级
+            tableView(self.tblTypeList, didSelectRowAt: IndexPath.init(row: typeIndex, section: 0))
+        }
+        self.maskView.backgroundColor = UIColor.clear
+        let tap = UITapGestureRecognizer.init(target: self, action: #selector(disMissAction))
+        self.maskView.addGestureRecognizer(tap)
+    }
+    
+    
+    func hideAllViews() {
+        typeChooseViewHeight.constant = 0
+        refrenceChooseViewHeight.constant = 0
+        resultChooseViewHeight.constant = 0
+        refrenceInputViewHeight.constant = 0
+        resultInputViewHeight.constant = 0
+    }
+    
+    fileprivate func changeScenceBy(type: ZXItemScenceType) {
+        self.checkLastScence(type: type)
+        switch type {
+            case .typeChoose:
+                typeChooseViewHeight.constant = fTypeChooseHeight
+                lastView = typeChooseView
+            case .refrenceChoose:
+                refrenceChooseViewHeight.constant = fRefrenceValueChooseHeight
+                lastView = refrenceChooseValueView
+            case .resultChoose:
+                resultChooseViewHeight.constant = fResultValueChooseHeight
+                lastView = resultValueChooseView
+            case .refrenceInput:
+                refrenceInputViewHeight.constant = 180
+                lastView = refrenceInputView
+                self.txtMinRefrenceValue.becomeFirstResponder()
+            case .resultInput:
+                resultInputViewHeight.constant = 180
+                lastView = resultValueInput
+                self.txtResultValue.becomeFirstResponder()
+            default:
+                break
+        }
+        UIView.animate(withDuration: 0.35) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    fileprivate func checkLastScence(type: ZXItemScenceType) {
+        if let lastView = lastView {
+            if lastView == typeChooseView {//类型选择界面
+                typeChooseViewHeight.constant = 0
+            } else if lastView == refrenceChooseValueView {//参考值选择界面
+                refrenceChooseViewHeight.constant = 0
+            } else if lastView == resultValueChooseView {//结果值选择界面
+                resultChooseViewHeight.constant = 0
+            } else if lastView == refrenceInputView {//参考值输入界面
+                refrenceInputViewHeight.constant = 0
+            } else if lastView == resultValueInput {//结果值输入界面
+                resultInputViewHeight.constant = 0
+            }
+        }
+    }
+    
+    @objc func disMissAction() {
+        self.view.endEditing(true)
+        self.dismiss(animated: true, completion: nil)
+    }
+    //MARK: - ChangeType
+    @IBAction func backToChangeType(_ sender: Any) {
+        self.changeScenceBy(type: .typeChoose)
+        self.view.endEditing(true)
+        if let selectedIndex = self.tblRefrenceChoose.indexPathForSelectedRow{
+            self.tblRefrenceChoose.deselectRow(at: selectedIndex, animated: false)
+        }
+        if let selectedIndex = self.tblResultChoose.indexPathForSelectedRow{
+            self.tblResultChoose.deselectRow(at: selectedIndex, animated: false)
+        }
+        txtResultValue.text = ""
+        txtMinRefrenceValue.text = ""
+        txtMaxRefrenceValue.text = ""
+    }
+    
+    @IBAction func resultInputDoneAction(_ sender: Any) {
+        guard let resultValue = self.txtResultValue.text else {
+            ZXHUD.showFailure(in: self.view, text: "请填写结果值", delay: ZX.HUDDelay)
+            return
+        }
+        resultCallBack?(.valueType,resultValue,-1)
+        self.disMissAction()
+    }
+    
+    @IBAction func refrenceInputDoneAction(_ sender: Any) {
+        guard let minValue = self.txtMinRefrenceValue.text else {
+            return
+        }
+        guard let maxValue = self.txtMaxRefrenceValue.text else {
+            return
+        }
+        if minValue.isEmpty {
+            ZXHUD.showFailure(in: self.view, text: "请填写最小值", delay: ZX.HUDDelay)
+            return
+        }
+        if maxValue.isEmpty {
+            ZXHUD.showFailure(in: self.view, text: "请填写最大值", delay: ZX.HUDDelay)
+            return
+        }
+        if let min = Double(minValue), let max = Double(maxValue) {
+            if max < min {
+                ZXHUD.showFailure(in: self.view, text: "最大值不能小于最小值", delay: ZX.HUDDelay)
+                return
+            }
+            refrenceCallBack?(.valueType,minValue,maxValue,"\(minValue)-\(maxValue)",-1)
+            self.disMissAction()
+        } else {
+            ZXHUD.showFailure(in: self.view, text: "数据格式错误", delay: ZX.HUDDelay)
+        }
+    }
+    var hasDot = false
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if (range.location > 7) {
+            return false
+        }
+        
+        if textField.text?.range(of: ".") == nil {
+            hasDot = false
+        }
+        if (string.count > 0)
+        {
+            let single = string.substring(to: 1)
+            if (single >= "0" && single <= "9") || single == "." {//数据格式正确
+                //第一位小数点
+                if let text = textField.text,text.count == 0 {
+                    if single == "." {
+                        return false
+                    }
+                } else {
+                    if single == "0" {
+                        if (hasDot) {
+                            //小数点位数小于三位
+                            let ran = ((textField.text ?? "") as NSString).range(of: ".")
+                            if range.location - ran.location <= 3 {
+                                return true
+                            }else{
+                                return false
+                            }
+                        }
+                    } else {
+                        if let text = textField.text, text.count == 1 {
+                            if text == "0",single != "."{//第一位为0 第二位不为0 也不是小数点
+                                textField.text = single
+                                return false
+                            }
+                        }
+                    }
+                }
+                //输入的小数点
+                if  single == "." {
+                    if !hasDot {//text中之前还没有小数点
+                        hasDot = true
+                        return true
+                    } else {
+                        return false
+                    }
+                } else {
+                    if hasDot { //存在小数点
+                        //判断小数点的位数
+                        let ran = ((textField.text ?? "") as NSString).range(of: ".")
+                        if range.location - ran.location <= 3 {
+                            return true
+                        }else{
+                            return false
+                        }
+                    } else {
+                        return true
+                    }
+                }
+            } else {//输入的数据格式不正确
+                return false
+            }
+        }
+        return true
+    }
+    
+}
+
+extension ZXCheckItemInputViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if tableView == self.tblTypeList {//类型选择完成
+            typeIndex = indexPath.row
+            let typemodel = self.chooseTypeList[indexPath.row]
+            var count = typemodel.chooseList.count
+            if  count < 3 {
+                if count > 6 {
+                    count = 6
+                }
+                fRefrenceValueChooseHeight = CGFloat(count * 48 + 40)
+                fResultValueChooseHeight = CGFloat(count * 48 + 40)
+            } else {
+                fRefrenceValueChooseHeight = 180
+                fResultValueChooseHeight = 180
+            }
+            self.tblRefrenceChoose.reloadData()
+            self.tblResultChoose.reloadData()
+            switch dataInputType {//值类型
+                case .refrence://参考值
+                    if typemodel.type == .choose {//选择
+                        self.changeScenceBy(type: .refrenceChoose)
+                    } else if typemodel.type == .input {//输入
+                        self.changeScenceBy(type: .refrenceInput)
+                    }
+                case .result://参考值
+                    if typemodel.type == .choose {//选择
+                        self.changeScenceBy(type: .resultChoose)
+                    } else if typemodel.type == .input {//输入
+                        self.changeScenceBy(type: .resultInput)
+                    }
+                default:
+                    break
+            }
+            
+        } else if tableView == self.tblRefrenceChoose {//参考值选择
+            refrenceValueIndex = indexPath.row
+            let typeModel = self.chooseTypeList[typeIndex]
+            DispatchQueue.main.async {
+                self.disMissAction()
+            }
+            refrenceCallBack?(typeModel.zxValueType,nil,nil,typeModel.chooseList[indexPath.row],indexPath.row)
+        } else if tableView == self.tblResultChoose {//结果值选择
+            let typeModel = self.chooseTypeList[typeIndex]
+            DispatchQueue.main.async {
+                self.disMissAction()
+            }
+            resultCallBack?(typeModel.zxValueType,typeModel.chooseList[indexPath.row],indexPath.row)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 48
+    }
+}
+
+extension ZXCheckItemInputViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if tableView == self.tblTypeList {
+            return self.chooseTypeList.count
+        } else {
+            if self.chooseTypeList.count > 0 {
+                return self.chooseTypeList[typeIndex].chooseList.count
+            }
+        }
+        return 0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if tableView == self.tblTypeList {//类型选择
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell1", for: indexPath) as! ZXCheckSelectCell
+            cell.showCheckImage = false
+            cell.lbName.text = self.chooseTypeList[indexPath.row].name
+            return cell
+        } else if tableView == self.tblRefrenceChoose {//参考值
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell2", for: indexPath) as! ZXCheckSelectCell
+            cell.showCheckImage = true
+            cell.lbName.text = self.chooseTypeList[typeIndex].chooseList[indexPath.row]
+            return cell
+        } else  {//结果值
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell3", for: indexPath) as! ZXCheckSelectCell
+            cell.showCheckImage = true
+            cell.lbName.text = self.chooseTypeList[typeIndex].chooseList[indexPath.row]
+            return cell
+        }
+    }
+}
+
+extension ZXCheckItemInputViewController {
+    
+    override func zx_keyboardWillChangeFrame(beginRect: CGRect, endRect: CGRect, duration dt: Double, userInfo: Dictionary<String, Any>) {
+        if self.txtResultValue.isFirstResponder {
+            resultInputViewBottom.constant = endRect.size.height
+        } else {
+            refrenceInputViewBottom.constant = endRect.size.height
+        }
+        UIView.animate(withDuration: 0.35) {
+            self.view.layoutIfNeeded()
+        }
+
+    }
+    override func zx_keyboardWillHide(duration dt: Double, userInfo: Dictionary<String, Any>) {
+        if self.txtResultValue.isFirstResponder {
+            resultInputViewBottom.constant = 0
+        } else {
+            refrenceInputViewBottom.constant = 0
+        }
+        UIView.animate(withDuration: 0.35) {
+            self.view.layoutIfNeeded()
+        }
+    }
+}
+
+extension ZXCheckItemInputViewController: UIViewControllerTransitioningDelegate {
+    func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+        return ZXDimmingPresentationController.init(presentedViewController: presented, presenting: presenting)
+    }
+}

@@ -1,0 +1,74 @@
+//
+//  ZXAddRemindViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXAddRemindViewController: ZXUIViewController {
+    //
+    @IBOutlet weak var drugNameText: UITextField!
+    @IBOutlet weak var dosageText: UITextField!
+    @IBOutlet weak var descText: UITextField!
+    @IBOutlet weak var historyBtn: UIButton!
+    @IBOutlet weak var unitBtn: ZXBButton!
+    //
+    @IBOutlet weak var drugCycleLb: UILabel!
+    @IBOutlet weak var drugCycleBtn: UIButton!
+    //
+    @IBOutlet weak var drugTimeView: UIView!
+    
+    class func loadStoryBoard() -> ZXAddRemindViewController {
+        return UIStoryboard.init(name: "DrugRemind", bundle: nil).instantiateViewController(withIdentifier: "ZXAddRemind") as! ZXAddRemindViewController
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.title = "添加提醒"
+        self.view.backgroundColor = UIColor.white
+        
+        //nav
+        self.zx_addNavBarButtonItems(textNames: ["保存"], font: nil, color: nil, at: .right)
+    }
+    
+    func setUI() {
+        
+    }
+    
+    //MARK: - NAV
+    override func zx_rightBarButtonAction(index: Int) {
+        print("保存")
+    }
+    
+    //MARK: -
+    
+    @IBAction func historyBtnAction(_ sender: UIButton) {
+    }
+    
+    @IBAction func unitBtnAction(_ sender: UIButton) {
+    }
+    
+    @IBAction func drugCycleBtnAction(_ sender: UIButton) {
+    }
+    
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+    */
+
+}

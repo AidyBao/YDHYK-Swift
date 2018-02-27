@@ -1,0 +1,201 @@
+//
+// ZXScreeningView.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/5/23.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+protocol ZXScreeningViewDelegate: NSObjectProtocol {
+    func didZXScreeningViewItem(_ str: String,_ butTag: Int,_ typeArr: NSMutableArray)
+    func didRemoveSuperView()
+}
+
+class ZXScreeningView: UIView {
+
+    static let ZXScreeningViewID:String = "ZXScreeningView"
+    weak var delegate: ZXScreeningViewDelegate?
+    
+    var selectedIndex: IndexPath?
+    var tableViewHeight: CGFloat = 0.0
+    var selectedSet:NSMutableSet = NSMutableSet.init(capacity: 3)
+    var btnTag: Int = 0
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        //
+        self.initWithUI()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        self.initWithUI()
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.initWithUI()
+    }
+    
+    private func initWithUI() -> Void {
+        //
+        self.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+        //
+        self.addSubview(self.tableView)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        //
+        self.frame = CGRect.init(x: 0, y: 44, width: ZX_BOUNDS_WIDTH, height: ZX_BOUNDS_HEIGHT - 64)
+        //
+        self.tableView.frame = CGRect.init(x: 0, y: 0, width: ZX_BOUNDS_WIDTH, height: 0)
+
+        UIView.animate(withDuration: 0.35, animations: {
+            self.tableView.height = self.tableViewHeight
+        }) { (finished) in
+            self.alpha = 1.0
+        }
+    }
+    
+    //MARK: - 数据源
+    func loadData(type btnType: Int) -> Void {
+        self.btnTag = btnType
+        
+        switch btnType {
+        case ZXNearbyStoreViewController.BtnTag.all:
+            self.typeArray = ["全部","中医馆","药店"]
+            self.tableViewHeight = CGFloat(self.typeArray.count) * 50.0
+        case ZXNearbyStoreViewController.BtnTag.region:
+            self.typeArray = ["范围不限","5百米内","1千米内","3千米内","5千米内"]
+            self.tableViewHeight = CGFloat(self.typeArray.count) * 50.0
+        case ZXNearbyStoreViewController.BtnTag.distance:
+            self.typeArray = ["距离优先","会员优先"]
+            self.tableViewHeight = CGFloat(self.typeArray.count) * 50.0
+        default:
+            break
+        }
+        
+        self.layoutIfNeeded()
+        
+        self.tableView.reloadData()
+    }
+    
+    //MARK: -选中默认行
+    func setDefault(_ defaultStr: String) {
+        self.selectedSet.removeAllObjects()
+        self.typeArray.enumerateObjects({ (_ objct:Any, _ index: Int, _ stop: UnsafeMutablePointer<ObjCBool>) in
+            if let tempStr = objct as? String , tempStr == defaultStr  {
+                let indexPatch:NSIndexPath = NSIndexPath.init(row: index, section: 0)
+                self.tableView.scrollToRow(at: indexPatch as IndexPath, at: UITableViewScrollPosition.middle, animated: true)
+                self.selectedSet.add(indexPatch)
+            }
+        })
+    }
+    
+    func show() -> Void {
+        ZXRootController.appWindow()?.addSubview(self)
+    }
+    
+    //MARK: - Dismiss
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        self.dismiss()
+    }
+    
+    func dismiss() -> Void {
+        
+        if delegate != nil {
+            delegate?.didRemoveSuperView()
+        }
+        
+        UIView.animate(withDuration: 0.35, animations: {
+            self.tableView.height = 0
+        }) { (finished) in
+            self.alpha = 0.0
+        }
+        
+        self.removeFromSuperview()
+    }
+    
+    deinit {
+        self.removeFromSuperview()
+    }
+    
+    //MARK: - Lazy
+    lazy var typeArray: NSMutableArray = {
+        let array: NSMutableArray = NSMutableArray.init()
+        return array
+    }()
+    
+    lazy var tableView: UITableView = {
+        let tabel: UITableView = UITableView.init()
+        tabel.delegate = self
+        tabel.dataSource = self
+        tabel.register(UITableViewCell.self, forCellReuseIdentifier: ZXScreeningView.ZXScreeningViewID)
+        return tabel
+    }()
+}
+
+extension ZXScreeningView: UITableViewDelegate {
+    
+}
+
+extension ZXScreeningView: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.typeArray.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 50.0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell:UITableViewCell = tableView.dequeueReusableCell(withIdentifier: ZXScreeningView.ZXScreeningViewID, for: indexPath)
+        cell.selectionStyle = .none
+        cell.textLabel?.font = UIFont.zx_titleFont(15.0)
+        
+        if self.selectedSet.contains(indexPath) {
+            cell.accessoryType = .checkmark
+            cell.textLabel?.textColor = UIColor.zx_tintColor
+        }else{
+            cell.accessoryType = .none
+            cell.textLabel?.textColor = UIColor.zx_textColorTitle
+        }
+        
+        if self.typeArray.count != 0 {
+            cell.textLabel?.text = "\(self.typeArray.object(at: indexPath.row))"
+        }
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.selectedSet.removeAllObjects()
+        
+        let newCell:UITableViewCell = tableView.cellForRow(at: indexPath)!
+        if newCell.accessoryType == .none {
+            newCell.accessoryType = .checkmark
+            newCell.textLabel?.textColor = UIColor.zx_tintColor
+        }else if newCell.accessoryType == .checkmark {
+            newCell.accessoryType = .none
+            newCell.textLabel?.textColor = UIColor.zx_textColorTitle
+            self.selectedSet .remove(indexPath)
+        }
+        
+        if delegate != nil,self.typeArray.count != 0 {
+            delegate?.didZXScreeningViewItem(self.typeArray.object(at: indexPath.row) as! String,self.btnTag,self.typeArray)
+        }
+        self.dismiss()
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let oldCell:UITableViewCell = tableView.cellForRow(at: indexPath)!
+        if oldCell.accessoryType == .checkmark {
+            oldCell.accessoryType = .none
+            oldCell.textLabel?.textColor = UIColor.zx_textColorTitle
+        }
+    }
+}

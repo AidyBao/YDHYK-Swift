@@ -1,0 +1,268 @@
+//
+//  ZXEditProfileViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/9.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXEditProfileViewController: ZXUITableViewController {
+    let SexView_Tag:Int = 3101
+    let AgeView_Tag:Int = 3102
+    /* 标题*/
+    @IBOutlet weak var iconLb: UILabel!
+    @IBOutlet weak var nameLb: UILabel!
+    @IBOutlet weak var sexLb: UILabel!
+    @IBOutlet weak var ageLb: UILabel!
+    @IBOutlet weak var telLb: UILabel!
+    @IBOutlet weak var addressLb: UILabel!
+    /* 详情*/
+    @IBOutlet weak var iconImgView: UIImageView!
+    @IBOutlet weak var name: UILabel!
+    @IBOutlet weak var sex: UILabel!
+    @IBOutlet weak var age: UILabel!
+    @IBOutlet weak var tel: UILabel!
+    
+    class func loadStoryBoard() -> ZXEditProfileViewController {
+        return UIStoryboard.init(name: "EditProfile", bundle: nil).instantiateViewController(withIdentifier: "ZXEditProfile") as! ZXEditProfileViewController
+    }
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.hidesBottomBarWhenPushed = true
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.title = "编辑资料"
+        self.clearsSelectionOnViewWillAppear = false
+        
+        self.setUIStyle()
+        
+        self.requestForGetAgeGroup()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        
+        self.setDefault()
+    }
+    
+    func setUIStyle() {
+        
+        self.iconLb.textColor = UIColor.zx_textColorTitle
+        self.nameLb.textColor = UIColor.zx_textColorTitle
+        self.sexLb.textColor = UIColor.zx_textColorTitle
+        self.ageLb.textColor = UIColor.zx_textColorTitle
+        self.telLb.textColor = UIColor.zx_textColorTitle
+        self.addressLb.textColor = UIColor.zx_textColorTitle
+        
+        self.name.textColor = UIColor.zx_textColorMark
+        self.sex.textColor = UIColor.zx_textColorMark
+        self.age.textColor = UIColor.zx_textColorMark
+        self.tel.textColor = UIColor.zx_textColorMark
+    }
+    
+    func setDefault() {
+        if ZXUser.user.sex == 0 {
+            self.iconImgView.kf.setImage(with: URL.init(string: ZXUser.user.headPortraitFilesStr), placeholder: #imageLiteral(resourceName: "touxiang-woman"), options: nil, progressBlock: nil, completionHandler: nil)
+        }else if ZXUser.user.sex == 1 {
+            self.iconImgView.kf.setImage(with: URL.init(string: ZXUser.user.headPortraitFilesStr), placeholder:#imageLiteral(resourceName: "touxiang-man"), options: nil, progressBlock: nil, completionHandler: nil)
+        }else{
+            self.iconImgView.kf.setImage(with: URL.init(string: ZXUser.user.headPortraitFilesStr), placeholder:UIImage.init(), options: nil, progressBlock: nil, completionHandler: nil)
+        }
+        
+        self.name.text = ZXUser.user.name
+        
+        if ZXUser.user.sex == 0 {
+            self.sex.text = "女"
+        }else if ZXUser.user.sex == 1{
+            self.sex.text = "男"
+        }else{
+            self.sex.text = ""
+        }
+        
+        self.age.text = ZXUser.user.userAgeGroup
+        
+        let head = ZXUser.user.tel.substring(with: 0..<3)
+        let tail = ZXUser.user.tel.substring(with: (ZXUser.user.tel.count - 4)..<ZXUser.user.tel.count)
+        self.tel.text = "\(head)****\(tail)"
+        
+    }
+    
+    //MARK: - 修改头像
+    func setupUserHeadPortraits() -> Void {
+        let cancelAction:UIAlertAction = UIAlertAction.init(title: "取消", style: UIAlertActionStyle.cancel) { (action) in}
+        let moreAction:UIAlertAction = UIAlertAction.init(title: "拍照", style: UIAlertActionStyle.default) { (action) in
+            self.chooseImageFromCamera()
+        }
+        let OKAction:UIAlertAction = UIAlertAction.init(title: "从手机相册选择", style: UIAlertActionStyle.default) { (action) in
+            self.chooseImageFromAlbum()
+        }
+        let alertController:UIAlertController = UIAlertController.init(title: nil, message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
+        alertController.addAction(cancelAction)
+        alertController.addAction(moreAction)
+        alertController.addAction(OKAction)
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    //MARK: -手机相册
+    func chooseImageFromAlbum() ->Void {
+        self.isEditing = false
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) == false {
+            ZXAlertUtils.showAlert(wihtTitle: "提示", message: "相册不可用", buttonText: "知道了", action: nil)
+            return
+        }
+        
+        let imgPickerVC = UIImagePickerController.init()
+        imgPickerVC.sourceType = UIImagePickerControllerSourceType.photoLibrary
+        imgPickerVC.delegate = self
+        self.present(imgPickerVC, animated: true, completion: nil)
+    }
+    
+    //MARK: -拍照
+    func chooseImageFromCamera() ->Void {
+        self.isEditing = false
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) == false {
+            ZXAlertUtils.showAlert(wihtTitle: "提示", message: "相机不可用", buttonText: "知道了", action: nil)
+            return
+        }
+        let imgPickerVC = UIImagePickerController.init()
+        imgPickerVC.sourceType = UIImagePickerControllerSourceType.camera
+        imgPickerVC.delegate = self
+        self.present(imgPickerVC, animated: true, completion: nil)
+    }
+    
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    lazy var ageArray: NSMutableArray = {
+        let arr: NSMutableArray = NSMutableArray.init(capacity: 5)
+        return arr
+    }()
+    
+    lazy var sexArray: NSMutableArray = {
+        let arr: NSMutableArray = NSMutableArray.init(array: ["男","女"])
+        return arr
+    }()
+
+}
+
+//MARK: - HTTP
+extension ZXEditProfileViewController {
+    //MArk: - 上传服务器
+    func requestForUpdateHeadImageFile(headImg:UIImage) ->Void {
+        ZXEditProfileController.requestForUploadHeadImage(image: headImg) { (success, status, content, string, error) in
+            if success {
+                if status == ZXAPI_SUCCESS {
+                    let filePath:String = content["filePath"] as! String
+                    self.requestForModifyUserIocnWithFilePath(filePath: filePath)
+                }else {
+                    ZXHUD.showFailure(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                }
+                
+            }else if status != ZXAPI_LOGIN_INVALID {
+                ZXHUD.showFailure(in: self.view, text: error!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    func requestForModifyUserIocnWithFilePath(filePath:String) -> Void {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXEditProfileController.requestForModifyUserIocnWithFilePath(filePath: filePath) { (success, status, content, string, error) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if success {
+                if status == ZXAPI_SUCCESS {
+                    //通知主页更新头像
+                    let imageStr: String = ZXAPI.file(address: filePath)
+                    
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: ZXNotification.Personal.ModifyHeaderIcon), object: imageStr)
+                    
+                    //更新本界面头像
+                    DispatchQueue.main.async {
+                        self.iconImgView.kf.setImage(with:URL(string:imageStr), placeholder: nil, options: nil, progressBlock: nil, completionHandler: nil)
+                    }
+                    
+                    //保存头像
+                    ZXEditProfileController.saveUserHeadProtrait(filePath: imageStr)
+                    
+                    ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                    
+                }else {
+                    ZXHUD.showFailure(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                }
+            }else if status != ZXAPI_LOGIN_INVALID {
+                ZXHUD.showFailure(in: self.view, text: error!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    func requestForGetAgeGroup() {
+        ZXLoginManager.requestForGetAgeGroup { (succ, code, content, str, errMsg) in
+            if code == ZXAPI_SUCCESS {
+                if let data = content["data"],((data as? Array<Any>) != nil) {
+                    let tempArr: NSMutableArray = ZXAgeGroupModel.mj_objectArray(withKeyValuesArray: data)
+                    for (_, c) in tempArr.enumerated() {
+                        let model = c as! ZXAgeGroupModel
+                        self.ageArray.add(model.value)
+                    }
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: errMsg, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    func requestForModiySex(_ sex: Int) {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXEditProfileController.requestForModifySex(sex) { (suc, code, content, str, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if code == ZXAPI_SUCCESS {
+                ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                
+                if sex != -1,sex == 1 {
+                    self.sex.text = "男"
+                }else{
+                    self.sex.text = "女"
+                }
+                
+                ZXUser.user.sex = sex
+                ZXUser.user.sync()
+            }else{
+                ZXHUD.showFailure(in: self.view, text: errMsg!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+    func requestForModiyAgeGroup(_ ageGroup: Int, _ ageStr: String) {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXEditProfileController.requestForModifyAgeGroup(ageGroup) { (suc, code, content, str, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if code == ZXAPI_SUCCESS {
+                ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+
+                self.age.text = ageStr
+                
+                ZXUser.user.ageGroups = ageGroup
+                ZXUser.user.sync()
+            }else{
+                ZXHUD.showFailure(in: self.view, text: errMsg!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+}
+
+
+

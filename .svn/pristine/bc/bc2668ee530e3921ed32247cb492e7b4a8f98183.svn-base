@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="176" id="KGk-i7-Jjw" customClass="ZXUCOrderStatusWithProgressCell" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="505" height="176"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="505" height="175.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Zxo-Hg-URZ">
+                        <rect key="frame" x="0.0" y="0.0" width="505" height="88"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hOrder_waitPay_icon" translatesAutoresizingMaskIntoConstraints="NO" id="Lf2-l8-gLi">
+                                <rect key="frame" x="22" y="29.5" width="30" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="30" id="0cl-Vk-Ju5"/>
+                                    <constraint firstAttribute="height" constant="30" id="YEL-yo-ak1"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="自提订单进行中" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jw4-9R-dRu">
+                                <rect key="frame" x="70" y="12" width="122" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="下单成功，请等候店员备货" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cqE-dm-ENx">
+                                <rect key="frame" x="70" y="35" width="160" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="0.0" green="0.50196081400000003" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="Lf2-l8-gLi" firstAttribute="centerY" secondItem="Zxo-Hg-URZ" secondAttribute="centerY" id="2hR-Iv-ev5"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="cqE-dm-ENx" secondAttribute="bottom" id="EKD-L0-lPF"/>
+                            <constraint firstItem="cqE-dm-ENx" firstAttribute="top" secondItem="Jw4-9R-dRu" secondAttribute="bottom" constant="2" id="LX6-Fk-FaP"/>
+                            <constraint firstItem="Jw4-9R-dRu" firstAttribute="top" secondItem="Zxo-Hg-URZ" secondAttribute="top" constant="12" id="VlQ-Uy-Jtv"/>
+                            <constraint firstItem="Jw4-9R-dRu" firstAttribute="leading" secondItem="Lf2-l8-gLi" secondAttribute="trailing" constant="18" id="Xgd-MQ-D7o"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Jw4-9R-dRu" secondAttribute="trailing" constant="20" id="gbt-pK-jVf"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cqE-dm-ENx" secondAttribute="trailing" constant="20" id="ifd-7l-ymC"/>
+                            <constraint firstItem="cqE-dm-ENx" firstAttribute="leading" secondItem="Lf2-l8-gLi" secondAttribute="trailing" constant="18" id="l6B-Dh-2N1"/>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="72" id="w90-AA-lf4"/>
+                            <constraint firstItem="Lf2-l8-gLi" firstAttribute="leading" secondItem="Zxo-Hg-URZ" secondAttribute="leading" constant="22" id="wzY-Pp-wSN"/>
+                        </constraints>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ulL-yW-J0P">
+                        <rect key="frame" x="0.0" y="88" width="505" height="87.5"/>
+                        <subviews>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.25" translatesAutoresizingMaskIntoConstraints="NO" id="22u-1o-dvs">
+                                <rect key="frame" x="52" y="23.5" width="401" height="1"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="awS-4m-Ugi"/>
+                                </constraints>
+                            </progressView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hOrder_unCheck" highlightedImage="hOrder_check" highlighted="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NxS-gW-hJX" customClass="ZXUIImageView" customModule="YDHYK" customModuleProvider="target">
+                                <rect key="frame" x="40" y="17" width="14" height="14"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="14" id="4OI-Nw-CdK"/>
+                                    <constraint firstAttribute="height" constant="14" id="ggg-Iu-rEZ"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="7"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hOrder_unCheck" highlightedImage="hOrder_check" translatesAutoresizingMaskIntoConstraints="NO" id="qbX-1b-ZzN" customClass="ZXUIImageView" customModule="YDHYK" customModuleProvider="target">
+                                <rect key="frame" x="245.5" y="17" width="14" height="14"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="14" id="LpS-3a-T6e"/>
+                                    <constraint firstAttribute="width" constant="14" id="bsW-eE-ylB"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="7"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hOrder_unCheck" highlightedImage="hOrder_check" translatesAutoresizingMaskIntoConstraints="NO" id="YXI-SG-Pmr" customClass="ZXUIImageView" customModule="YDHYK" customModuleProvider="target">
+                                <rect key="frame" x="451" y="17" width="14" height="14"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="14" id="aa3-KU-Pgq"/>
+                                    <constraint firstAttribute="width" constant="14" id="o4A-Bp-Rfe"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="7"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="下单成功" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="taM-b5-WoO">
+                                <rect key="frame" x="20.5" y="41" width="53.5" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="已发货" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="efa-WR-ecd">
+                                <rect key="frame" x="232" y="41.5" width="40" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="确认收货" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gcw-GE-V64">
+                                <rect key="frame" x="431.5" y="41.5" width="53.5" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="22u-1o-dvs" firstAttribute="leading" secondItem="NxS-gW-hJX" secondAttribute="trailing" constant="-2" id="0Nb-py-cOD"/>
+                            <constraint firstItem="taM-b5-WoO" firstAttribute="centerX" secondItem="NxS-gW-hJX" secondAttribute="centerX" id="2F4-6U-uD9"/>
+                            <constraint firstItem="22u-1o-dvs" firstAttribute="centerY" secondItem="NxS-gW-hJX" secondAttribute="centerY" id="6C7-tj-TW8"/>
+                            <constraint firstItem="efa-WR-ecd" firstAttribute="centerY" secondItem="taM-b5-WoO" secondAttribute="centerY" id="GWd-9e-4gM"/>
+                            <constraint firstItem="YXI-SG-Pmr" firstAttribute="leading" secondItem="22u-1o-dvs" secondAttribute="trailing" constant="-2" id="IMx-s9-oow"/>
+                            <constraint firstItem="gcw-GE-V64" firstAttribute="centerY" secondItem="efa-WR-ecd" secondAttribute="centerY" id="JOG-Rl-C5q"/>
+                            <constraint firstAttribute="trailing" secondItem="YXI-SG-Pmr" secondAttribute="trailing" constant="40" id="MCd-tq-lTj"/>
+                            <constraint firstItem="gcw-GE-V64" firstAttribute="centerX" secondItem="YXI-SG-Pmr" secondAttribute="centerX" id="SQf-eN-uNq"/>
+                            <constraint firstItem="qbX-1b-ZzN" firstAttribute="centerX" secondItem="ulL-yW-J0P" secondAttribute="centerX" id="Ulc-E3-WvC"/>
+                            <constraint firstItem="taM-b5-WoO" firstAttribute="top" secondItem="NxS-gW-hJX" secondAttribute="bottom" constant="10" id="Vg8-8k-9Vf"/>
+                            <constraint firstItem="YXI-SG-Pmr" firstAttribute="top" secondItem="ulL-yW-J0P" secondAttribute="top" constant="17" id="YnB-dr-UmQ"/>
+                            <constraint firstItem="efa-WR-ecd" firstAttribute="centerX" secondItem="qbX-1b-ZzN" secondAttribute="centerX" id="ajO-UD-N9h"/>
+                            <constraint firstItem="qbX-1b-ZzN" firstAttribute="top" secondItem="ulL-yW-J0P" secondAttribute="top" constant="17" id="clc-Vx-fu0"/>
+                            <constraint firstItem="NxS-gW-hJX" firstAttribute="leading" secondItem="ulL-yW-J0P" secondAttribute="leading" constant="40" id="ndG-VR-QKi"/>
+                            <constraint firstItem="NxS-gW-hJX" firstAttribute="top" secondItem="ulL-yW-J0P" secondAttribute="top" constant="17" id="tY9-G2-OQP"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="Zxo-Hg-URZ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="2fE-0M-Ypz"/>
+                    <constraint firstAttribute="trailing" secondItem="ulL-yW-J0P" secondAttribute="trailing" id="DHJ-cY-Ecw"/>
+                    <constraint firstAttribute="trailing" secondItem="Zxo-Hg-URZ" secondAttribute="trailing" id="L6A-rn-sk1"/>
+                    <constraint firstAttribute="bottom" secondItem="ulL-yW-J0P" secondAttribute="bottom" id="Red-vm-8z4"/>
+                    <constraint firstItem="ulL-yW-J0P" firstAttribute="height" secondItem="Zxo-Hg-URZ" secondAttribute="height" id="Uxy-9g-2M3"/>
+                    <constraint firstItem="Zxo-Hg-URZ" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="XR8-tc-Vin"/>
+                    <constraint firstItem="ulL-yW-J0P" firstAttribute="top" secondItem="Zxo-Hg-URZ" secondAttribute="bottom" id="XVq-EU-6pe"/>
+                    <constraint firstItem="ulL-yW-J0P" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="db3-p4-RVf"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="imgIcon" destination="Lf2-l8-gLi" id="Vlf-vO-fMT"/>
+                <outlet property="imgStatus1" destination="NxS-gW-hJX" id="uat-w2-S92"/>
+                <outlet property="imgStatus2" destination="qbX-1b-ZzN" id="dH2-b1-JZ7"/>
+                <outlet property="imgStatus3" destination="YXI-SG-Pmr" id="kx2-cn-iWP"/>
+                <outlet property="lbDetailText" destination="cqE-dm-ENx" id="Kpw-oO-I2K"/>
+                <outlet property="lbStatus1" destination="taM-b5-WoO" id="52W-TQ-WfY"/>
+                <outlet property="lbStatus2" destination="efa-WR-ecd" id="WqB-lh-fDQ"/>
+                <outlet property="lbStatus3" destination="gcw-GE-V64" id="ivg-e0-Xzg"/>
+                <outlet property="lbStatusText" destination="Jw4-9R-dRu" id="wNZ-NH-XDU"/>
+                <outlet property="statusBackView" destination="Zxo-Hg-URZ" id="xvZ-zh-NeQ"/>
+                <outlet property="statusProgress" destination="22u-1o-dvs" id="18N-pX-agY"/>
+            </connections>
+            <point key="canvasLocation" x="118.5" y="118"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="hOrder_check" width="15" height="15"/>
+        <image name="hOrder_unCheck" width="15" height="15"/>
+        <image name="hOrder_waitPay_icon" width="27" height="23"/>
+    </resources>
+</document>

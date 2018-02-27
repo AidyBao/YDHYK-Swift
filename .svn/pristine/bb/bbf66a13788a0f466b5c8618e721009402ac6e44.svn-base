@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="60" id="jPW-SA-5tw" customClass="ZXDrugDetailCell" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="60"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="jPW-SA-5tw" id="Q00-gE-HSQ">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="59.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="藿香正气液" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5nW-tC-Fr1">
+                        <rect key="frame" x="10" y="5" width="230" height="19"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="饭前服用" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FLG-Qh-w6O">
+                        <rect key="frame" x="10" y="29" width="290" height="25.5"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="calibratedWhite"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3片" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="55z-XU-xOG">
+                        <rect key="frame" x="240" y="5" width="60" height="18"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="60" id="0lk-b4-BDx"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="55z-XU-xOG" secondAttribute="trailing" constant="20" id="7jg-yz-Tqx"/>
+                    <constraint firstItem="55z-XU-xOG" firstAttribute="top" secondItem="Q00-gE-HSQ" secondAttribute="top" constant="5" id="CFh-SZ-uqL"/>
+                    <constraint firstItem="FLG-Qh-w6O" firstAttribute="top" secondItem="5nW-tC-Fr1" secondAttribute="bottom" constant="5" id="ESU-vi-64A"/>
+                    <constraint firstItem="55z-XU-xOG" firstAttribute="centerY" secondItem="5nW-tC-Fr1" secondAttribute="centerY" id="I6U-iJ-YJ5"/>
+                    <constraint firstItem="5nW-tC-Fr1" firstAttribute="top" secondItem="Q00-gE-HSQ" secondAttribute="top" constant="5" id="Kva-CM-CdY"/>
+                    <constraint firstItem="FLG-Qh-w6O" firstAttribute="leading" secondItem="Q00-gE-HSQ" secondAttribute="leading" constant="10" id="Pdd-1d-1gl"/>
+                    <constraint firstAttribute="trailing" secondItem="FLG-Qh-w6O" secondAttribute="trailing" constant="20" id="TdW-Mv-mMM"/>
+                    <constraint firstAttribute="bottom" secondItem="FLG-Qh-w6O" secondAttribute="bottom" constant="5" id="ckM-UY-zIM"/>
+                    <constraint firstItem="55z-XU-xOG" firstAttribute="leading" secondItem="5nW-tC-Fr1" secondAttribute="trailing" id="lK9-ty-pvi"/>
+                    <constraint firstItem="5nW-tC-Fr1" firstAttribute="leading" secondItem="Q00-gE-HSQ" secondAttribute="leading" constant="10" id="lNQ-IG-c78"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="countLb" destination="55z-XU-xOG" id="3DA-vq-llb"/>
+                <outlet property="nameLb" destination="5nW-tC-Fr1" id="SBG-29-ccf"/>
+                <outlet property="remarkLb" destination="FLG-Qh-w6O" id="N3u-K8-UiQ"/>
+            </connections>
+            <point key="canvasLocation" x="25" y="60"/>
+        </tableViewCell>
+    </objects>
+</document>

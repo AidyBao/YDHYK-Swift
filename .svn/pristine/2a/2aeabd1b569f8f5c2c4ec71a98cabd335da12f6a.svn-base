@@ -1,0 +1,23 @@
+//
+//  ZXReportAnalyseListViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/6.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXReportAnalyseListViewController: ZXUIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "化验单分析"
+        // Do any additional setup after loading the view.
+        self.zx_addNavBarButtonItems(textNames: ["模板"], font: nil, color: nil, at: .right)
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        
+    }
+}

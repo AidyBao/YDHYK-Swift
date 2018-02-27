@@ -1,0 +1,85 @@
+//
+//  ZXNearbyStoreViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/8.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXNearbyStoreViewController: ZXUIViewController {
+    /** 顶部视图*/
+    @IBOutlet weak var topView: UIView!
+    /** tableView*/
+    @IBOutlet weak var tableView: UITableView!
+    /**  全部 */
+    @IBOutlet weak var allBtn: UIButton!
+    /**  范围不限 */
+    @IBOutlet weak var regionBtn: UIButton!
+    /**  距离优先 */
+    @IBOutlet weak var disBtn: UIButton!
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.hidesBottomBarWhenPushed = false
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        //
+        self.addSearchView()
+
+        // Nav
+        self.zx_addNavBarButtonItems(textNames: ["关闭"], font: nil, color: nil, at: .left)
+        self.zx_addNavBarButtonItems(textNames: ["地图"], font: nil, color: nil, at: .right)
+    }
+    
+    override func zx_leftBarButtonAction(index: Int) {
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    override func zx_rightBarButtonAction(index: Int) {
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    //MARK: SearchView
+    func addSearchView() {
+        self.navigationItem.titleView = self.searchBtn
+    }
+    
+    @objc func searchBtnAction() {
+        self.navigationController?.pushViewController(ZXSearchViewController(), animated: true)
+    }
+    
+    @IBAction func screenBtnAction(_ sender: UIButton) {
+        
+    }
+    
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+
+    //MARK: - Lazy
+    //MARK: - Lazy
+    lazy var searchBtn: UIButton = {
+        let btn: UIButton = UIButton.init(frame: CGRect.init(x: 0, y: 0, width: 290, height: 30))
+        btn.backgroundColor = UIColor.white
+        btn.setImage(#imageLiteral(resourceName: "icon-search"), for: .normal)
+        btn.setTitle(" 搜索药店、医馆", for: .normal)
+        btn.setTitleColor(UIColor.zx_textColorMark, for: .normal)
+        btn.titleLabel?.font = UIFont.zx_titleFont
+        btn.layer.cornerRadius = 5.0
+        btn.layer.masksToBounds = true
+        btn.addTarget(self, action: #selector(searchBtnAction), for: .touchUpInside)
+        return btn
+    }()
+}

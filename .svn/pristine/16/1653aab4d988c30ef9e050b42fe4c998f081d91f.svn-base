@@ -1,0 +1,41 @@
+//
+//  AppDelegate+ZX.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/6.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+extension AppDelegate {
+    
+    func zx_addNotice() {
+        NotificationCenter.default.addObserver(self, selector: #selector(zx_loginInvalidAction), name: ZXNotification.Login.invalid.zx_noticeName(), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(zx_loginSuccess), name: ZXNotification.Login.success.zx_noticeName(), object: nil)
+    }
+    
+    @objc func zx_loginInvalidAction() {
+        if !isProcessed {
+            return
+        }
+        isProcessed = false
+        ZXUser.user.invalid()
+        ZXAlertUtils.showAlert(wihtTitle: nil, message: "登录已失效,请重新登录", buttonText: nil) {
+            self.isProcessed = true;
+            ZXRootController.zxReload()
+            ZXRouter.changeRootViewController(UINavigationController.init(rootViewController: ZXLoginRootViewController()))
+        }
+    }
+    
+    @objc func zx_loginSuccess() {
+        isProcessed = true
+    }
+}
+
+extension AppDelegate: ZXCartButtonDelegate {
+    func zxCartButtonTapped() {
+        let shoppingCart = ZXShoppingCartViewController()
+        ZXRootController.selectedNav().pushViewController(shoppingCart, animated: true)
+    }
+}

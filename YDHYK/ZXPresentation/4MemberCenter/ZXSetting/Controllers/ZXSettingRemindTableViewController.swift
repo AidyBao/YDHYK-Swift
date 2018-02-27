@@ -1,0 +1,199 @@
+//
+//  ZXSettingRemindTableViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/8.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXSettingRemindTableViewController: ZXUITableViewController {
+
+    @IBOutlet weak var lab1: UILabel!
+    @IBOutlet weak var lab2: UILabel!
+    @IBOutlet weak var lab3: UILabel!
+    
+    @IBOutlet weak var AuthorizeBtn: UIButton!
+    @IBOutlet weak var remaindSwitch: UISwitch!
+    @IBOutlet weak var voiceRemind: UISwitch!
+    
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.navigationItem.title = "用药提醒设置"
+        self.tableView.backgroundColor = UIColor.zx_subTintColor
+        
+        self.setUIStyle()
+        
+        self.setDefault()
+        
+        self.firstConfirmNotAuthor()
+    }
+    
+    func setUIStyle() {
+        self.lab1.textColor = UIColor.zx_textColorTitle
+        self.lab2.textColor = UIColor.zx_textColorTitle
+        self.lab3.textColor = UIColor.zx_textColorTitle
+        
+        self.lab1.font = UIFont.zx_titleFont
+        self.lab2.font = UIFont.zx_titleFont
+        self.lab3.font = UIFont.zx_titleFont
+        
+        self.AuthorizeBtn.setTitleColor(UIColor.zx_textColorMark, for: .normal)
+        self.AuthorizeBtn.titleLabel?.font = UIFont.zx_subTitleFont
+    }
+    
+    func setDefault() {
+        let isRepeated = ZXUser.user.isRepeatedReminders
+        if isRepeated == 0 {
+            self.remaindSwitch.isOn = true
+        }else if isRepeated == 1 {
+            self.remaindSwitch.isOn = false
+        }
+        
+        let isOn = ZXUser.user.isVoiceRemind
+        if isOn == 1 {
+            self.voiceRemind.isOn = true
+        }else{
+            self.voiceRemind.isOn = false
+        }
+    }
+    
+    //MARK - 点击打开
+    @IBAction func authorizeBtnAction(_ sender: UIButton) {
+        if #available(iOS 10.0, *) {
+            UIApplication.shared.open(URL.init(string: UIApplicationOpenSettingsURLString)!, options: [UIApplicationOpenURLOptionUniversalLinksOnly:""]) { (success) in}
+        } else {
+            UIApplication.shared.openURL(URL.init(string: UIApplicationOpenSettingsURLString)!)
+        }
+    }
+    
+    //MARK: - 判断通知是否授权
+    func firstConfirmNotAuthor() {
+        let delegate: AppDelegate =  UIApplication.shared.delegate as! AppDelegate
+        delegate.isAllowRemoteNotification { (allow) in
+            if allow {
+                self.AuthorizeBtn.setTitle("已打开", for: .normal)
+            }else{
+                self.AuthorizeBtn.setTitle("点击打开", for: .normal)
+            }
+        }
+    }
+    
+    //MARK - 用药重复提醒
+    @IBAction func remainSwitchAction(_ sender: UISwitch) {
+        self.requestForRepeatedRemind(sender.isOn)
+    }
+    
+    //MARK - 语音提醒
+    @IBAction func voiceSwitchAction(_ sender: UISwitch) {
+        self.requestForVoiceRemind(sender.isOn)
+    }
+    
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+}
+
+//MARK: - HTTP
+extension ZXSettingRemindTableViewController {
+    //MARK: - 开启关闭重复提醒
+    func requestForRepeatedRemind(_ openStatus: Bool) {
+        var dict: Dictionary<String,Any> = Dictionary()
+        dict["isRepeatedReminders"] = openStatus ? 0 : 1 //0 开启 1关闭
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.repeatedReminder), params: dict, method: .post) { (suc, code, content, str, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if code == ZXAPI_SUCCESS {
+                ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                let zxuser = ZXUser.user
+                if openStatus == true {
+                    self.remaindSwitch.isOn = true
+                    zxuser.isRepeatedReminders = 0
+                }else if openStatus == false {
+                    self.remaindSwitch.isOn = false
+                    zxuser.isRepeatedReminders = 1
+                }
+                ZXUser.user.sync()
+            }else{
+                ZXHUD.showFailure(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                if openStatus == true {
+                    self.remaindSwitch.isOn = false
+                }else if openStatus == false {
+                    self.remaindSwitch.isOn = true
+                }
+            }
+        }
+    }
+    
+    //MARK: - 开启关闭重复提醒
+    func requestForVoiceRemind(_ openStatus: Bool) {
+        var dict: Dictionary<String,Any> = Dictionary()
+        dict["isVoiceRemind"] = openStatus ? 1 : 0 //1:开启 0:关闭
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.voiceRemind), params: dict, method: .post) { (suc, code, content, str, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if code == ZXAPI_SUCCESS {
+                ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                let zxuser = ZXUser.user
+                //0 开启 1关闭
+                if openStatus == true {
+                    self.voiceRemind.isOn = true
+                    zxuser.isVoiceRemind = 1
+                }else if openStatus == false{
+                    self.voiceRemind.isOn = false
+                    zxuser.isVoiceRemind = 0
+                }
+                ZXUser.user.sync()
+            }else{
+                ZXHUD.showFailure(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                if openStatus == true {
+                    self.remaindSwitch.isOn = false
+                }else if openStatus == false {
+                    self.remaindSwitch.isOn = true
+                }
+            }
+        }
+    }
+}
+
+//MARK: - TableView
+extension ZXSettingRemindTableViewController {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        if section == 0 {
+            return 10.0
+        }
+        return 34.0
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 49.0
+    }
+    
+    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        if section == 1 || section == 2 {
+            let footView: UIView = UIView.init(frame: CGRect.init(x: 0, y: 0, width: ZXBOUNDS_WIDTH, height: 34))
+            footView.backgroundColor = UIColor.clear
+            let lable: UILabel = UILabel.init(frame: CGRect.init(x: 14, y: 0, width: ZXBOUNDS_WIDTH - 28, height: 34))
+            lable.font = UIFont.zx_markFont
+            lable.textColor = UIColor.zx_textColorBody
+            footView.addSubview(lable)
+            if section == 1 {
+                lable.text = "开启后,稍后服药代表系统将每隔5分钟提醒一次"
+            }else if section == 2 {
+                lable.text = "开启后,用药提醒会以语音的方式播送"
+            }
+            return footView
+        }
+        return nil
+    }
+}

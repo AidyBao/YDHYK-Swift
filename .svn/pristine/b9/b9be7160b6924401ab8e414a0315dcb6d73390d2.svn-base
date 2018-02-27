@@ -1,0 +1,195 @@
+//
+//  ZXReportAnalyseViewModel.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/20.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXReportAnalyseViewModel: NSObject {
+    /// 已保存化验单列表
+    ///
+    /// - Parameters:
+    ///   - pageNum:
+    ///   - pageSize:
+    ///   - completion:
+    static func list(pageNum: Int,
+                     pageSize: Int,
+                     completion:((_ success: Bool,_ code: Int,_ list:Array<ZXReportListModel>?,_ errorMsg: String) -> Void)?) {
+        var dicP: Dictionary<String, Any> = [:]
+        dicP["pageNum"] = (pageNum <= 0 ? 1 : pageNum)
+        dicP["pageSize"] = (pageSize <= 0 ? ZX.PageSize : pageSize)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Report.list), params: dicP, method: .post) { (success, code, obj, _, error) in
+            if code == ZXAPI_SUCCESS {
+                if let data = obj["data"] as? Dictionary<String, Any>,let listData = data["listData"] as? Array<Dictionary<String, Any>> {
+                    var tList: Array<ZXReportListModel> = []
+                    for d in listData {
+                        if let report = ZXReportListModel.mj_object(withKeyValues: d) {
+                            tList.append(report)
+                        }
+                    }
+                    completion?(true,code,tList,"")
+                } else {
+                    completion?(true,code,[],"无相关数据")
+                }
+            } else {
+                completion?(false,code,nil,error?.errorMessage ?? "未知错误")
+            }
+        }
+    }
+    /// 查看保存的化验单详情
+    ///
+    /// - Parameters:
+    ///   - reportId:
+    ///   - completion:
+    static func reportDetail(reportId: String,
+                             completion:((_ success: Bool,_ code: Int,_ items:Array<ZXCheckItemShortModel>?,_ patient:ZXPatientInfo?,_ errorMsg: String) -> Void)?) {
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Report.detail), params: ["id": reportId], method: .post) { (success, code, obj, _, error) in
+            if code == ZXAPI_SUCCESS {
+                if let data = obj["data"] as? Dictionary<String, Any>,let listData = data["laboratorySheetDetailList"] as? Array<Dictionary<String, Any>> {
+                    var tList: Array<ZXCheckItemShortModel> = []
+                    for d in listData {
+                        if let item = ZXCheckItemShortModel.mj_object(withKeyValues: d) {
+                            tList.append(item)
+                        }
+                    }
+                    completion?(true,code,tList,ZXPatientInfo.mj_object(withKeyValues: data),"")
+                } else {
+                    completion?(true,code,[],nil,"无相关数据")
+                }
+            } else {
+                completion?(false,code,nil,nil,error?.errorMessage ?? "未知错误")
+            }
+        }
+    }
+    
+    /// 化验单分析结果
+    ///
+    /// - Parameters:
+    ///   - reportId:
+    ///   - completion: 
+    static func analyseResult(reportId: String,
+                              completion:((_ success: Bool,_ code: Int,_ items:Array<ZXAnalyseResultItem>?,_ errorMsg: String) -> Void)?) {
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Report.result), params: ["id": reportId], method: .post) { (success, code, obj, _, error) in
+            if code == ZXAPI_SUCCESS {
+                if let data = obj["data"] as? Dictionary<String, Any>,let listData = data["laboratoryItems"] as? Array<Dictionary<String, Any>> {
+                    var tList: Array<ZXAnalyseResultItem> = []
+                    for d in listData {
+                        if let item = ZXAnalyseResultItem.mj_object(withKeyValues: d) {
+                            tList.append(item)
+                        }
+                    }
+                    completion?(true,code,tList,"")
+                } else {
+                    completion?(true,code,[],"无相关数据")
+                }
+            } else {
+                completion?(false,code,nil,error?.errorMessage ?? "未知错误")
+            }
+        }
+
+    }
+    static var zx_allCheckItemListCache: Array<ZXCheckItemListModel>?
+    /// 获取检测模板下的检查项列表
+    ///
+    /// - Parameters:
+    ///   - templateKey: key == nil 检索所有检查项列表  key != nil 检索对于模板下的检查项
+    ///   - completion:
+    static func checkItemListBy(templateKey: String?,completion:((_ success: Bool,_ code: Int,_ items:Array<ZXCheckItemListModel>?,_ errorMsg: String) -> Void)?) {
+        var dicp: Dictionary<String,Any>?
+        if let key = templateKey {
+            dicp = ["key": key]
+        }
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Report.checkItemList), params: dicp, method: .post) { (success, code, obj, _, error) in
+            if code == ZXAPI_SUCCESS {
+                if let data = obj["data"] as? Array<Dictionary<String, Any>> {
+                    var tList: Array<ZXCheckItemListModel> = []
+                    for d in data {
+                        if let item = ZXCheckItemListModel.mj_object(withKeyValues: d) {
+                            tList.append(item)
+                        }
+                    }
+                    tList.sort(by: { (item1, item2) -> Bool in
+                        let py1 = item1.zx_pinyin
+                        let py2 = item2.zx_pinyin
+                        return (py1.compare(py2) == .orderedAscending)
+                    })
+                    if templateKey == nil {//全部检查项 缓存
+                        self.zx_allCheckItemListCache = tList
+                    }
+                    completion?(true,code,tList,"")
+                } else {
+                    completion?(false,code,nil,"无相关数据")
+                }
+            } else {
+                completion?(false,code,nil,error?.errorMessage ?? "未知错误")
+            }
+        }
+    }
+    
+    /// 新增化验单
+    ///
+    /// - Parameters:
+    ///   - age:
+    ///   - sex:
+    ///   - itemList: <ZXCheckItemDetailModel>
+    ///   - imgUrl: nil
+    ///   - completion:
+    static func addNewAnalyse(age: String,
+                              sex: String,
+                              itemList:Array<ZXCheckItemDetailModel>,
+                              imgUrl: String?,
+                              completion:((_ success: Bool,_ code: Int,_ reportId:String?,_ isAbnormal: Bool,_ errorMsg: String) -> Void)?) {
+        var dicp: Dictionary<String,Any> = [: ]
+        dicp["age"] = age
+        dicp["sex"] = sex
+        if let imgUrl = imgUrl {
+            dicp["img"] = imgUrl
+        }
+        if itemList.count > 0 {
+            var arrList: Array<Dictionary<String,Any>> = []
+            for item in itemList {
+                if let dicTT = item.mj_keyValues() {
+                    arrList.append(dicTT as! Dictionary<String, Any>)
+                }
+            }
+            dicp["itemList"] = (arrList as NSArray).mj_JSONString()
+        }
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Report.add), params: dicp, method: .post) { (s, c, obj, _, error) in
+            if c == ZXAPI_SUCCESS {
+                if let data = obj["data"] as? Dictionary<String, Any> {
+                    let reportId = data["id"] as? String
+                    let isAbnormal = data["isAbnormal"] as? Int
+                    completion?(true,c,reportId,isAbnormal == 1 ? true : false,"")
+                } else {
+                    completion?(false,c,nil,false,"数据格式错误")
+                }
+            } else {
+                if c != ZXAPI_LOGIN_INVALID {
+                    completion?(false,c,nil,false,error?.errorMessage ?? "未知错误")
+                }
+            }
+        }
+    }
+    
+    /// 删除化验单
+    ///
+    /// - Parameters:
+    ///   - reportId:
+    ///   - completion:
+    static func deleteReport(reportId: String,
+                             completion:((_ success: Bool,_ code: Int,_ errorMsg: String) -> Void)?) {
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Report.delete), params: ["sheetId": reportId], method: .post) { (s, c, obj, _, error) in
+            if c == ZXAPI_SUCCESS {
+               completion?(true,c,"")
+            } else {
+                if c != ZXAPI_LOGIN_INVALID {
+                    completion?(false,c,error?.errorMessage ?? "未知错误")
+                }
+            }
+        }
+
+    }
+}

@@ -1,0 +1,18 @@
+//
+//  ZXDrugRemarkViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/6.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXDrugRemarkViewController: ZXUIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "药品收藏"
+        // Do any additional setup after loading the view.
+    }
+}

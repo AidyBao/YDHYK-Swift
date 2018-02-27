@@ -1,0 +1,213 @@
+//
+//  ZXMyAddressViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/9.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+protocol ZXAddressListDelegate: class {
+    func zxAddressList(vc:ZXMyAddressViewController,selected address:ZXAddressModel?)
+}
+
+class ZXMyAddressViewController: ZXUITableViewController {
+    weak var delegate: ZXAddressListDelegate?
+    static let MyAddress_Segue: String = "MyAddress"
+    
+    static func zx_init() -> ZXMyAddressViewController? {
+        let sb = UIStoryboard.init(name: "EditProfile", bundle: nil)
+        if let vc = sb.instantiateViewController(withIdentifier: "ZXMyAddress") as? ZXMyAddressViewController {
+            return vc
+        }
+        return nil
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.navigationItem.title = "我的收货地址"
+        self.view.backgroundColor = UIColor.zx_subTintColor
+        
+        //右边按钮
+        self.addRightView()
+        
+        //刷新控件
+        self.addRefreshView()
+        
+        self.tableView.register(UINib.init(nibName:String.init(describing: ZXAddressCell.self), bundle: nil), forCellReuseIdentifier: ZXAddressCell.ZXAddressCellID)
+    }
+    
+    //MARK: - 添加右边+按钮
+    func addRightView() -> Void {
+        let addButton:UIBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: UIBarButtonSystemItem.add, target: self, action: #selector(addBtnAction(_:)))
+        self.navigationItem.rightBarButtonItem = addButton;
+    }
+    
+    //MARK: - 添加收货地址
+    @objc func addBtnAction(_ sender:UIBarButtonItem) -> Void {
+        let editVC: ZXEidtAddressViewController = ZXEidtAddressViewController.loadStoryBoard()
+        editVC.isNewAdd = true
+        self.navigationController?.pushViewController(editVC, animated: true)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
+        
+        self.refreshForHeader()
+    }
+    
+    //MARK: - Refresh
+    private func addRefreshView() ->Void{
+        self.tableView.zx_addHeaderRefresh(showGif: true, target: self, action: #selector(refreshForHeader))
+    }
+    
+    @objc func refreshForHeader() -> Void{
+        self.requestForReceiverAddressList()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    //MARK: - Lazy
+    lazy var dataArray: NSMutableArray = {
+        let dataArray:NSMutableArray = NSMutableArray.init(capacity: 5)
+        return dataArray
+    }()
+}
+
+extension ZXMyAddressViewController: ZXAddressCellDelegate {
+    func didSelectedAddressAction(_ sender: UIButton, _ model: ZXAddressModel) {
+        switch sender.tag {
+        case ZXAddressCell.ToolButtonTag.statusBtnTag://设置默认
+            self.requestForSettingDefaultAddress(model.addrId)
+        case ZXAddressCell.ToolButtonTag.editBtnTag://编辑
+            let editVC: ZXEidtAddressViewController = ZXEidtAddressViewController.loadStoryBoard()
+            editVC.isNewAdd = false
+            self.navigationController?.pushViewController(editVC, animated: true)
+        case ZXAddressCell.ToolButtonTag.deletedBtnTag://删除
+            self.selectedRootCelldeletedButtonAction(sender, model)
+        default:
+            break
+        }
+    }
+    
+    //MARK: - 删除
+    func selectedRootCelldeletedButtonAction(_ sender: UIButton,_ model: ZXAddressModel){
+        let alertController:UIAlertController = UIAlertController.init(title: "提示", message: "确定删除地址吗？", preferredStyle: UIAlertControllerStyle.alert)
+        let cancelAction:UIAlertAction = UIAlertAction.init(title: "取消", style: UIAlertActionStyle.cancel, handler: nil)
+        
+        var addrsModel:ZXAddressModel = ZXAddressModel()
+        let moreAction:UIAlertAction = UIAlertAction.init(title: "确定", style: UIAlertActionStyle.default) { (action) in
+            self.dataArray.enumerateObjects({ (obj : Any, idx: Int, stop:UnsafeMutablePointer<ObjCBool>) in
+                addrsModel = obj as! ZXAddressModel
+                if addrsModel.addrId == model.addrId {
+                    stop[0] = true
+                    DispatchQueue.main.async {
+                        self.requestForRemoveReceiverAddress(model.addrId, idx)
+                    }
+                }
+            })
+        }
+        alertController.addAction(cancelAction)
+        alertController.addAction(moreAction)
+        self.present(alertController, animated: true, completion: nil)
+        
+    }
+}
+
+extension ZXMyAddressViewController {
+    //MARK:收货地址
+    func requestForReceiverAddressList() -> Void {
+        ZXEmptyView.hide(from: self.view)
+        let params:Dictionary<String,Any> = Dictionary()
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.addressList), params: params, method: .post) { (success, status, content, string, error) in
+            ZXHUD.hide(for: self.view, animated: true)
+            ZXEmptyView.hide(from: self.view)
+            self.tableView.mj_header.endRefreshing()
+            if success {
+                if status == ZXAPI_SUCCESS {
+                    if let data = content["data"] as? Array<Any>,data.count != 0 {
+                        self.dataArray = ZXAddressModel.mj_objectArray(withKeyValuesArray: data)
+                    }else{
+                        ZXEmptyView.show(in: self.view, type: .noData, text: "请添加地址", retry: {
+                            ZXEmptyView.hide(from: self.view)
+                        })
+                    }
+                }else {
+                    ZXEmptyView.show(in: self.view, type: .noData, text: "请添加地址", retry: {
+                        ZXEmptyView.hide(from: self.view)
+                    })
+                }
+                self.tableView.reloadData()
+            }else if status != ZXAPI_LOGIN_INVALID {
+                ZXEmptyView.show(in: self.view, type: .networkError, text: nil, retry: {
+                    ZXEmptyView.hide(from: self.view)
+                    self.requestForReceiverAddressList()
+                })
+            }
+        }
+    }
+    //MARK:删除收货地址
+    func requestForRemoveReceiverAddress(_ addressId:Int,_ index:NSInteger) -> Void {
+        var params:Dictionary<String,Any> = Dictionary.init()
+        if addressId != 0 {
+            params["id"] = "\(addressId)"
+        }
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.removeAddress), params: params, method: .post) { (success, status, content, string, error) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if success {
+                if status == ZXAPI_SUCCESS {
+                    ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: 1.2)
+                    DispatchQueue.main.async {
+                        self.dataArray.removeObject(at: index)
+                        if self.dataArray.count == 0 {
+                            ZXEmptyView.show(in: self.view, type: .noData, text: "请添加地址", retry: {
+                                ZXEmptyView.hide(from: self.view)
+                                self.refreshForHeader()
+                            })
+                        }
+                        self.tableView.reloadData()
+                    }
+//                    if let defaultAddress = self.zx_defaultAddress,defaultAddress.addrId == addressId {
+//                        self.callBack?(nil)
+//                    }
+                }else{
+                    ZXHUD.showFailure(in: self.view, text: content["msg"] as! String, delay: 1.2)
+                }
+            }else if status != ZXAPI_LOGIN_INVALID {
+                ZXHUD.showFailure(in: (ZXRootController.appWindow()?.rootViewController?.view)!, text: (error?.description)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+    //MARK:默认收货地址
+    func requestForSettingDefaultAddress(_ addrId:Int) -> Void {
+        var params:Dictionary<String,Any> = Dictionary.init()
+        if addrId != -1 {
+            params["id"] = "\(addrId)"
+        }
+        
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: 0)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.Personal.defaultAddress), params: params, method: .post) { (success, status, content, string, error) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if success {
+                if status == ZXAPI_SUCCESS {
+                    if status == ZXAPI_SUCCESS {
+                        ZXHUD.showSuccess(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                        
+                        self.refreshForHeader()
+                        
+                    }else{
+                        ZXHUD.showFailure(in: self.view, text: content["msg"] as! String, delay: ZX.HUDDelay)
+                    }
+                }
+            }else if status != ZXAPI_LOGIN_INVALID {
+                ZXHUD.showFailure(in: (ZXRootController.appWindow()?.rootViewController?.view)!, text: (error?.description)!, delay: ZX.HUDDelay)
+            }
+        }
+    }
+}

@@ -1,0 +1,72 @@
+//
+//  ZXDrugRemindRootViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXDrugRemindRootViewController: ZXUIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.title = "用药提醒"
+        // - Nav
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(addRemind))
+        
+        // - 用药提醒按提醒时间分类查询
+        self.requestForRemindTime()
+    }
+    
+    //MARK: - 添加提醒
+    @objc func addRemind() {
+        self.navigationController?.pushViewController(ZXAddRemindViewController(), animated: true)
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    //MARK: - Lazy
+    lazy var remindArr: Array<ZXRemindModel> = {
+        let arr: Array<ZXRemindModel> = Array.init()
+        return arr
+    }()
+}
+
+//MARK: - HTTP
+extension ZXDrugRemindRootViewController {
+    //MARK: - 用药提醒按提醒时间分类查询
+    func requestForRemindTime() {
+        ZXRemindController.requestForSearchByRemindTime(completion: { (succ, code, list, errMsg) in
+            if succ {
+                
+                
+            }else{
+                ZXHUD.showFailure(in: self.view, text: errMsg, delay: ZX.HUDDelay)
+            }
+        })
+    }
+    
+    //MARK: - 已添加提醒
+    func requestForRemindList() {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXRemindController.requestForDrugRemindList(completion:  { (succ, code, listModel, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            ZXEmptyView.hide(from: self.view)
+            if succ {
+                if let listModel = listModel,listModel.count > 0 {
+                    self.remindArr = listModel
+                }
+            }else if code != ZXAPI_LOGIN_INVALID {
+                ZXEmptyView.show(in: self.view, type: .networkError, text: errMsg, retry: {
+                    ZXEmptyView.hide(from: self.view)
+                    self.requestForRemindList()
+                })
+            }
+        })
+    }
+}

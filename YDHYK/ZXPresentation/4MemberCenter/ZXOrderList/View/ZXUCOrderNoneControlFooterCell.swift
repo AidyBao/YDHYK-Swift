@@ -1,0 +1,41 @@
+//
+//  ZXUCOrderNoneControlFooterCell.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/7.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+/// 订单 总价格 (无操作)
+class ZXUCOrderNoneControlFooterCell: UITableViewCell {
+
+    static let height: CGFloat = 55
+    
+    @IBOutlet weak var lbCouponInfo: UILabel!
+    
+    @IBOutlet weak var lbTotalInfo: UILabel!
+    @IBOutlet weak var couponInfoHeight: NSLayoutConstraint!
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+        self.selectionStyle = .none
+        self.lbCouponInfo.font = UIFont.zx_titleFont(11)
+        self.lbCouponInfo.textColor = UIColor.zx_textColorBody
+        self.lbTotalInfo.font = UIFont.zx_titleFont(13)
+        self.lbTotalInfo.textColor = UIColor.zx_textColorBody
+        
+        self.lbCouponInfo.text = nil
+        self.lbTotalInfo.text = nil
+    }
+    
+    func reloadData(model: ZXUCOrderDetailModel?) {
+        self.lbCouponInfo.text = nil
+        self.lbTotalInfo.text = nil
+        if let model = model {
+            self.lbCouponInfo.text = model.zx_couponInfo
+            self.lbTotalInfo.attributedText = model.zx_totalInfoAttributeStr
+        }
+    }
+}

@@ -1,0 +1,21 @@
+//
+//  ZXUCOrderDetailViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/7.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+
+/// 个人中心-订单详情
+class ZXUCOrderDetailViewController: ZXUIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "订单详情"
+        // Do any additional setup after loading the view.
+    }
+
+}

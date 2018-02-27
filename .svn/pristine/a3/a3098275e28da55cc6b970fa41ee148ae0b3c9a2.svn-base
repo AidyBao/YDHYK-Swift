@@ -1,0 +1,110 @@
+//
+//  ZXDrugListView.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+import AnimatedCollectionViewLayout
+
+class ZXDrugListView: UIView {
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        self.setUI()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+        self.setUI()
+    }
+    
+    //MARK: - UI
+    func setUI() {
+        self.backgroundColor = UIColor.zx_tintColor
+        
+        self.addSubview(self.pageControl)
+        
+        self.addSubview(self.collectionView)
+        
+        self.pageControl.numberOfPages = 5
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        self.collectionView.frame = CGRect.init(x: 0, y: 7, width: self.bounds.size.width, height: 229)
+        
+        self.pageControl.frame = CGRect.init(x: 0, y: self.collectionView.frame.maxY, width: self.bounds.size.width, height: 32)
+    }
+    
+    
+    //MARK: Lazy
+    lazy var remindTimeArray: NSMutableArray = {
+        let arr: NSMutableArray = NSMutableArray.init(capacity: 5)
+        return arr
+    }()
+    
+    lazy var pageControl: UIPageControl = {
+        let pagCon: UIPageControl = UIPageControl.init()
+        pagCon.currentPageIndicatorTintColor = UIColor.white
+        pagCon.pageIndicatorTintColor = UIColor.zx_textColorBody
+        pagCon.currentPage = 0;
+        pagCon.backgroundColor = UIColor.zx_tintColor
+        return pagCon
+    }()
+    
+    lazy var collectionView: UICollectionView = {
+        let animLayout: AnimatedCollectionViewLayout = AnimatedCollectionViewLayout()
+        var animator: LinearCardAttributesAnimator = LinearCardAttributesAnimator()
+        animator.itemSpacing = 0.20
+        animator.scaleRate = 0.85
+        animLayout.animator = animator
+        animLayout.scrollDirection = .horizontal
+        animLayout.minimumLineSpacing = 0
+        animLayout.minimumInteritemSpacing = 0
+        animLayout.sectionInset = UIEdgeInsets.zero
+        let collView: UICollectionView = UICollectionView.init(frame: CGRect.zero, collectionViewLayout: animLayout)
+        collView.showsVerticalScrollIndicator = false
+        collView.showsHorizontalScrollIndicator = false
+        collView.delegate = self
+        collView.dataSource = self
+        collView.backgroundColor = UIColor.zx_tintColor
+        collView.isPagingEnabled = true
+        collView.autoresizingMask = [UIViewAutoresizing(rawValue: UIViewAutoresizing.RawValue(UInt8(UIViewAutoresizing.flexibleWidth.rawValue) | UInt8(UIViewAutoresizing.flexibleHeight.rawValue)))]
+        collView.register(UINib.init(nibName: String.init(describing: ZXRemindListCell.self), bundle: nil), forCellWithReuseIdentifier: ZXRemindListCell.ZXRemindListCellID)
+        return collView
+    }()
+}
+
+extension ZXDrugListView:UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        self.pageControl.currentPage = (NSInteger)(scrollView.contentOffset.x/(scrollView.bounds.size.width))
+    }
+}
+
+extension ZXDrugListView: UICollectionViewDelegate {
+    
+}
+
+extension ZXDrugListView: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize.init(width: ZXBOUNDS_WIDTH, height: 249.0)
+    }
+}
+
+extension ZXDrugListView: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 5
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell: ZXRemindListCell = collectionView.dequeueReusableCell(withReuseIdentifier: ZXRemindListCell.ZXRemindListCellID, for: indexPath) as! ZXRemindListCell
+        
+        return cell
+    }
+}

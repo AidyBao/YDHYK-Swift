@@ -1,0 +1,66 @@
+//
+//  ZXSmartToolViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/3.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+/// 智能工具
+class ZXSmartToolViewController: ZXUIViewController {
+
+    @IBOutlet weak var tblList: UITableView!
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        self.title = "智能工具"
+        self.view.backgroundColor = UIColor.zx_tintColor
+        self.tblList.backgroundColor = UIColor.clear
+        self.tblList.isScrollEnabled = false
+        self.tblList.register(UINib.init(nibName: ZXSmartToolCell.NibName, bundle: nil), forCellReuseIdentifier: ZXSmartToolCell.reuseIdentifier)
+    }
+}
+
+extension ZXSmartToolViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if indexPath.section == 0 {//用药提醒
+            
+        } else {//化验单分析
+            let addReportAnalyse = ZXAddNewReportAnalyseViewController()
+            self.navigationController?.pushViewController(addReportAnalyse, animated: true)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 130
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 20
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+}
+
+extension ZXSmartToolViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: ZXSmartToolCell.reuseIdentifier, for: indexPath) as! ZXSmartToolCell
+        cell.reloadData(by: indexPath.section)
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+}

@@ -1,0 +1,231 @@
+//
+//  ZXDrugRemindRootViewController.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/22.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXDrugRemindRootViewController: ZXUIViewController {
+    
+    @IBOutlet weak var bannerView: ZXDrugListView!
+    @IBOutlet weak var tableView: UITableView!
+    
+    @IBOutlet weak var remindLb: UILabel!
+    
+    @IBOutlet weak var notiView: UIView!
+    @IBOutlet weak var notiLb: UILabel!
+    @IBOutlet weak var notiDescLb: UILabel!
+    @IBOutlet weak var openNotiBtn: UIButton!
+    @IBOutlet weak var notiViewH: NSLayoutConstraint!
+    
+    /** 无数据时的处理*/
+    var isNoData: Bool = false
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.navigationItem.title = "用药提醒"
+        //
+        self.setUI()
+        
+        // - Nav
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(addRemind))
+        
+        // - 添加远程通知开启状态通知
+        self.checkNoticeStatus()
+        NotificationCenter.default.addObserver(self, selector: #selector(checkNoticeStatus), name: ZXNotification.Notice.open.zx_noticeName(), object: nil)
+        
+        // - 修改时间通知
+        NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: ZXNotification.Remind.ModifyTime.zx_noticeName(), object: nil)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        self.refresh()
+    }
+    
+    //MARK: - UI
+    func setUI() {
+        self.tableView.backgroundColor = UIColor.zx_subTintColor
+        self.tableView.separatorStyle = .none
+        
+        self.remindLb.textColor = UIColor.zx_textColorTitle
+        
+        self.notiView.backgroundColor = UIColor.zx_colorRGB(255, 244, 237, 1.0)
+        self.notiLb.textColor = UIColor.zx_colorRGB(249, 133, 56, 1.0)
+        self.openNotiBtn.setTitleColor(UIColor.zx_colorRGB(249, 133, 56, 1.0), for: .normal)
+        self.notiDescLb.textColor = UIColor.zx_textColorMark
+        self.notiLb.clipsToBounds = true
+        self.notiDescLb.clipsToBounds = true
+        self.openNotiBtn.clipsToBounds = true
+        //
+        self.tableView.register(UINib.init(nibName: String.init(describing: ZXRemindListRootCell.self), bundle: nil), forCellReuseIdentifier: ZXRemindListRootCell.ZXRemindListRootCellID)
+    }
+    
+    //MARK: - 刷新数据
+    @objc func refresh() {
+        
+        // - 用药提醒按提醒时间分类查询
+        self.requestForRemindTime()
+        
+        // - 用药提醒查询
+        self.requestForRemindList()
+    }
+    
+    //MARK: - 添加提醒
+    @objc func addRemind() {
+        self.navigationController?.pushViewController(ZXAddRemindViewController.loadStoryBoard(), animated: true)
+    }
+    
+    //MARK: - 检查通知是否开启
+    @objc func checkNoticeStatus() {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.isAllowRemoteNotification { (success) in
+            if success {
+                self.notiView.alpha = 1.0;
+                UIView.animate(withDuration: 0.35, animations: {
+                    self.notiViewH.constant = 0.0
+                }, completion: { (succ) in
+                    self.notiView.alpha = 0.0
+                })
+            }else{
+                self.notiView.alpha = 0.0;
+                UIView.animate(withDuration: 0.35, animations: {
+                    self.notiViewH.constant = 72.0
+                }, completion: { (succ) in
+                    self.notiView.alpha = 1.0
+                })
+            }
+        }
+    }
+
+    //MARK: - 开启通知
+    @IBAction func openNoticeAction(_ sender: UIButton) {
+        if #available(iOS 10.0, *) {
+            UIApplication.shared.open(URL.init(string: UIApplicationOpenSettingsURLString)!, options: [UIApplicationOpenURLOptionUniversalLinksOnly:""]) { (success) in
+            }
+        } else {
+            UIApplication.shared.openURL(URL.init(string: UIApplicationOpenSettingsURLString)!)
+        }
+    }
+    
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    //MARK: - Lazy
+    lazy var remindArr: Array<Any> = {
+        let arr: Array<Any> = Array.init()
+        return arr
+    }()
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+}
+
+//MARK: - HTTP
+extension ZXDrugRemindRootViewController {
+    //MARK: - 用药提醒按提醒时间分类查询
+    func requestForRemindTime() {
+        ZXRemindController.requestForSearchByRemindTime(completion: { (succ, code, listModel, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if succ {
+                if code == ZXAPI_SUCCESS {
+                    self.bannerView.loadData(listModel)
+                }
+            }else{
+                ZXHUD.showFailure(in: self.view, text: errMsg, delay: ZX.HUDDelay)
+            }
+        })
+    }
+    
+    //MARK: - 已添加提醒
+    func requestForRemindList() {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXRemindController.requestForDrugRemindList(completion:  { (succ, code, listModel, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            ZXEmptyView.hide(from: self.view)
+            if code == ZXAPI_SUCCESS {
+                if succ {
+                    if let listModel = listModel,listModel.count > 0 {
+                        self.remindArr = listModel
+                        self.isNoData = false
+                    }
+                }else{
+                    self.isNoData = true
+                    self.tableView.separatorStyle = .singleLine
+                    ZXHUD.showFailure(in: self.view, text: "暂无数据", delay: ZX.HUDDelay)
+                }
+                
+                if self.remindArr.count == 0,self.isNoData == true {
+                    for _ in 0..<5 {
+                        self.remindArr.append(1)
+                    }
+                }
+                self.tableView.reloadData()
+            }else if code != ZXAPI_LOGIN_INVALID {
+                ZXEmptyView.show(in: self.view, type: .networkError, text: errMsg, retry: {
+                    ZXEmptyView.hide(from: self.view)
+                    self.requestForRemindList()
+                })
+            }
+        })
+    }
+    
+    //MARK: - 删除提醒
+    func requestForDeletedRemind(_ model: ZXRemindModel , _ indexPath:IndexPath,_ tableView: UITableView) {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXNetwork.asyncRequest(withUrl: ZXAPI.api(address: ZXAPIConst.UseDrug.removeDrugRemind), params: ["id":model.remindId], method: .post) { (succ, code, content, str, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if succ {
+                ZXHUD.showSuccess(in: self.view, text: "删除成功", delay: ZX.HUDDelay)
+                
+                self.remindArr.remove(at: indexPath.row)
+                
+                tableView.beginUpdates()
+                if self.remindArr.count <= 0 {
+                    tableView.deleteSections(IndexSet([indexPath.section]), with: .automatic)
+                    self.isNoData = true
+                }else{
+                    tableView.deleteRows(at: [indexPath], with: .automatic)
+                }
+                tableView.endUpdates()
+                
+                if self.remindArr.count == 0,self.isNoData == true {
+                    for _ in 0..<5 {
+                        self.remindArr.append(1)
+                    }
+                    self.tableView.reloadData()
+                }
+                
+                //用药提醒按提醒时间分类查询
+                self.requestForRemindTime()
+            }else{
+                ZXHUD.showFailure(in: self.view, text: "删除失败", delay: ZX.HUDDelay)
+            }
+        }
+    }
+    //MARK: - 用药提醒药品开启/关闭提醒
+    func requestForPushStatus(_ isPush:Int,_ model: ZXRemindModel?) {
+        ZXHUD.showLoading(in: self.view, text: ZX_LOADING_TEXT, delay: nil)
+        ZXRemindController.requestForPush(["isPush":isPush,"id":model?.remindId ?? ""]) { (succ, code, listModel, errMsg) in
+            ZXHUD.hide(for: self.view, animated: true)
+            if succ {
+                ZXHUD.showSuccess(in: self.view, text: "推送开启成功", delay: ZX.HUDDelay)
+                //用药提醒按提醒时间分类查询
+                self.requestForRemindTime()
+                //
+                self.requestForRemindList()
+            }else{
+                ZXHUD.showFailure(in: self.view, text: "推送开启失败", delay: ZX.HUDDelay)
+            }
+        }
+    }
+    
+}

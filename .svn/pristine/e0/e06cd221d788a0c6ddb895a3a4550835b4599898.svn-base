@@ -1,0 +1,106 @@
+//
+//  ZXDiscoverDetailViewController.swift
+//  YDHYK
+//
+//  Created by screson on 2017/11/3.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+class ZXDiscoverDetailViewController: ZXUIViewController,UIWebViewDelegate {
+
+    var model: ZXDiscoverModel?
+    
+    @IBOutlet weak var scrollView: UIScrollView!
+    
+    @IBOutlet weak var lbTitle: UILabel!
+    @IBOutlet weak var lbTime: UILabel!
+    
+    @IBOutlet weak var contentView: UIView!
+    @IBOutlet weak var webHeight: NSLayoutConstraint!
+    @IBOutlet weak var webContent: UIWebView!
+    
+    @IBOutlet weak var contentViewWidth: NSLayoutConstraint!
+    @IBOutlet weak var contentViewHeight: NSLayoutConstraint!
+    @IBOutlet weak var webViewHeight: NSLayoutConstraint!
+    
+    @IBOutlet weak var loadingHUD: UIActivityIndicatorView!
+    
+    var documentHeight:CGFloat = 0
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        
+        
+        self.scrollView.backgroundColor = .white
+        self.contentView.backgroundColor = .white
+        self.webContent.backgroundColor = .white
+        
+        self.lbTitle.font = UIFont.zx_titleFont(UIFont.zx_titleFontSize + 2)
+        self.lbTitle.textColor = UIColor.zx_textColorTitle
+        
+        self.lbTime.font = UIFont.zx_titleFont(12)
+        self.lbTime.textColor = UIColor.zx_textColorBody
+        
+        self.loadingHUD.hidesWhenStopped = true
+        self.webContent.delegate = self
+        self.webContent.scrollView.isScrollEnabled = false
+        self.webContent.stringByEvaluatingJavaScript(from: "document.documentElement.style.webkitUserSelect='none';")
+        self.webContent.stringByEvaluatingJavaScript(from: "document.documentElement.style.webkitTouchCallout='none';")
+        
+        if let model = model {
+            self.title = model.groupName
+            self.lbTitle.text = model.title
+            self.lbTime.text = model.zx_publishDate
+            self.webContent.loadHTMLString(model.content, baseURL: nil)
+
+        } else {
+            ZXEmptyView.show(in: self.view, type: .noData, text: nil)
+        }
+    }
+    
+    fileprivate func updateFrame() {
+        contentViewWidth.constant = ZXBOUNDS_WIDTH
+        let htmlHeight = self.webContent.scrollView.contentSize.height //计算不准确
+        //let htmlHeight = documentHeight
+        webViewHeight.constant = htmlHeight
+        var totalHeight = self.lbTime.frame.maxY + htmlHeight + 20
+        if totalHeight < ZXBOUNDS_HEIGHT - 64 {
+            totalHeight = ZXBOUNDS_HEIGHT - 64
+        }
+        contentViewHeight.constant = totalHeight
+        self.scrollView.contentSize = CGSize(width: ZXBOUNDS_WIDTH, height: totalHeight)
+        UIView.animate(withDuration: 0.35) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.updateFrame()
+    }
+    
+    func webViewDidStartLoad(_ webView: UIWebView) {
+        self.loadingHUD.startAnimating()
+    }
+    
+    func webViewDidFinishLoad(_ webView: UIWebView) {
+        self.loadingHUD.stopAnimating()
+        //var frame = webView.frame
+        //frame.size.width = ZX_BOUNDS_WIDTH - 40
+        //frame.size.height = 1//必须大于0
+        //webView.frame = frame
+        //frame.size.height = webView.scrollView.contentSize.height
+        //documentHeight = webView.scrollView.contentSize.height
+        
+        self.updateFrame()
+    }
+    
+    func webView(_ webView: UIWebView, didFailLoadWithError error: Error) {
+        self.loadingHUD.stopAnimating()
+    }
+    
+}

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="78" id="KGk-i7-Jjw" customClass="ZXUCOrderStatusCell" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="477" height="78"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="477" height="77.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mra-1S-j2d">
+                        <rect key="frame" x="0.0" y="0.0" width="477" height="77.5"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hOrder_waitPay_icon" translatesAutoresizingMaskIntoConstraints="NO" id="vvJ-Rx-NHN">
+                                <rect key="frame" x="22" y="24" width="30" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="9Sq-iR-9qv"/>
+                                    <constraint firstAttribute="width" constant="30" id="h3A-af-M24"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="订单已取消" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yLK-Nu-2WS">
+                                <rect key="frame" x="70" y="29" width="87" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="自提订单进行中" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="A8X-ON-JSD">
+                                <rect key="frame" x="70" y="12" width="122" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="下单成功，请等候店员备货" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sX7-BV-Uqi">
+                                <rect key="frame" x="70" y="35" width="160" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="0.0" green="0.50196081400000003" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="yLK-Nu-2WS" firstAttribute="leading" secondItem="vvJ-Rx-NHN" secondAttribute="trailing" constant="18" id="9me-VL-0KF"/>
+                            <constraint firstItem="A8X-ON-JSD" firstAttribute="top" secondItem="mra-1S-j2d" secondAttribute="top" constant="12" id="DMQ-ys-sE2"/>
+                            <constraint firstItem="vvJ-Rx-NHN" firstAttribute="centerY" secondItem="mra-1S-j2d" secondAttribute="centerY" id="F4o-Mk-RBP"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="sX7-BV-Uqi" secondAttribute="bottom" id="GYb-lh-KOq"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="yLK-Nu-2WS" secondAttribute="trailing" constant="20" id="Lbz-6D-irQ"/>
+                            <constraint firstItem="yLK-Nu-2WS" firstAttribute="centerY" secondItem="vvJ-Rx-NHN" secondAttribute="centerY" id="Pub-xC-aXd"/>
+                            <constraint firstItem="A8X-ON-JSD" firstAttribute="leading" secondItem="vvJ-Rx-NHN" secondAttribute="trailing" constant="18" id="aK8-52-DAV"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="sX7-BV-Uqi" secondAttribute="trailing" constant="20" id="aiH-dp-2ms"/>
+                            <constraint firstItem="sX7-BV-Uqi" firstAttribute="leading" secondItem="vvJ-Rx-NHN" secondAttribute="trailing" constant="18" id="hZq-gx-AOj"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="A8X-ON-JSD" secondAttribute="trailing" constant="20" id="msy-Lm-ys4"/>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="72" id="qOa-ft-YuH"/>
+                            <constraint firstItem="vvJ-Rx-NHN" firstAttribute="leading" secondItem="mra-1S-j2d" secondAttribute="leading" constant="22" id="rgc-Th-lB8"/>
+                            <constraint firstItem="sX7-BV-Uqi" firstAttribute="top" secondItem="A8X-ON-JSD" secondAttribute="bottom" constant="2" id="tXy-ep-nQZ"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="mra-1S-j2d" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="Q3C-av-6GA"/>
+                    <constraint firstItem="mra-1S-j2d" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="VtY-2G-xKb"/>
+                    <constraint firstAttribute="bottom" secondItem="mra-1S-j2d" secondAttribute="bottom" id="Xdo-sn-tRZ"/>
+                    <constraint firstAttribute="trailing" secondItem="mra-1S-j2d" secondAttribute="trailing" id="opV-Uo-FRD"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="backContentView" destination="mra-1S-j2d" id="0F8-aq-DMg"/>
+                <outlet property="imgIcon" destination="vvJ-Rx-NHN" id="RU5-DG-Wjk"/>
+                <outlet property="lbCanceledText" destination="yLK-Nu-2WS" id="Y0C-QV-krx"/>
+                <outlet property="lbDetailInfo" destination="sX7-BV-Uqi" id="0VO-OL-LE7"/>
+                <outlet property="lbStatustext" destination="A8X-ON-JSD" id="5Hd-HG-QJL"/>
+            </connections>
+            <point key="canvasLocation" x="104.5" y="69"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="hOrder_waitPay_icon" width="27" height="23"/>
+    </resources>
+</document>

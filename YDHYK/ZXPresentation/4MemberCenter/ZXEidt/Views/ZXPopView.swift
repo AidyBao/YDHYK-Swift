@@ -1,0 +1,205 @@
+//
+//  GJChangeShopListView.swift
+//  YDY_GJ_3_5
+//
+//  Created by 120v on 2017/4/27.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+protocol ZXPopViewDelegate:NSObjectProtocol {
+    func didSelectedPopViewCell(_ str:String, _ flag:Int)
+}
+
+class ZXPopView: UIView {
+    
+    struct PopViewFlag {
+       static let Sex       = 3101
+       static let Age       = 3102
+       static let DrugUnits = 3103
+       static let DrugCycle = 3104
+    }
+    
+    //MARK: -
+    static let ChangeShopListViewID:String = "ZXPopView"
+    weak var delegate:ZXPopViewDelegate?
+    let cellHeight: CGFloat = 40.0
+    @IBOutlet weak var tableView: UITableView!
+    var selectedSet:NSMutableSet = NSMutableSet.init(capacity: 3)
+    var titleStr: String = ""
+    var flag: Int = 0
+   
+    @IBOutlet weak var tabelViewH: NSLayoutConstraint!
+    //MARK: -
+    static func loadNib() -> ZXPopView{
+        let nibView:ZXPopView = Bundle.main.loadNibNamed("ZXPopView", owner: self, options: nil)?.first as! ZXPopView
+        return nibView
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+        //动画
+        self.loadAnimation(dismiss:false)
+        
+        //
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+        self.tableView.backgroundColor = UIColor.white
+        self.tableView.separatorColor = UIColor.zx_borderColor
+        self.tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: ZXPopView.ChangeShopListViewID)
+    }
+    
+    func loadData(_ arr: NSMutableArray,_ title: String,_ defualt: String) {
+        
+        self.dataArray = arr
+        self.titleStr = title
+        
+        let newHeight: CGFloat = cellHeight*CGFloat(self.dataArray.count + 1)
+        self.tabelViewH.constant = newHeight
+        self.layoutIfNeeded()
+        
+        self.setDefault(defualt)
+        
+        self.tableView.reloadData()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.frame = UIScreen.main.bounds
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.loadAnimation(dismiss: true)
+    }
+    
+    //MARK: -选中默认行
+    func setDefault(_ defaultStr: String) {
+        self.selectedSet.removeAllObjects()
+        self.dataArray.enumerateObjects({ (_ objct:Any, _ index: Int, _ stop: UnsafeMutablePointer<ObjCBool>) in
+            if let tempStr = objct as? String , tempStr == defaultStr  {
+                let indexPatch:NSIndexPath = NSIndexPath.init(row: index, section: 0)
+                self.tableView.scrollToRow(at: indexPatch as IndexPath, at: UITableViewScrollPosition.middle, animated: true)
+                self.selectedSet.add(indexPatch)
+            }
+        })
+    }
+    
+    lazy var dataArray: NSMutableArray = {
+        let arr: NSMutableArray = NSMutableArray.init()
+        return arr
+    }()
+    
+    
+    //MARK: - 动画
+    func loadAnimation(dismiss:Bool) -> Void {
+        let animation:CATransition = CATransition.init()
+        animation.duration = 0.3
+        animation.timingFunction = CAMediaTimingFunction.init(name: kCAMediaTimingFunctionEaseInEaseOut)
+        if dismiss {
+            animation.fillMode = kCAFillModeRemoved
+            animation.type = kCATransitionReveal            //动画效果
+            animation.subtype = kCATransitionFromBottom     //动画方向
+        }else{
+            animation.fillMode = kCAFillModeForwards
+            animation.type = kCATransitionMoveIn            //动画效果
+            animation.subtype = kCATransitionFromTop     //动画方向
+        }
+        self.tableView.layer.add(animation, forKey: "animation")
+        
+        UIView.beginAnimations("fadeIn", context: nil) //淡出
+        UIView.setAnimationDuration(0.3)
+        if dismiss {
+            self.tableView.alpha = 0.0
+            self.alpha = 0.0
+        }else {
+            self.alpha = 1.0
+        }
+        UIView.commitAnimations()
+    }
+}
+
+extension ZXPopView:UITableViewDelegate,UITableViewDataSource{
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.dataArray.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return cellHeight
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return cellHeight
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell:UITableViewCell = tableView.dequeueReusableCell(withIdentifier: ZXPopView.ChangeShopListViewID, for: indexPath)
+        cell.selectionStyle = .none
+        cell.textLabel?.font = UIFont.zx_titleFont(15.0)
+        
+        if self.selectedSet.contains(indexPath) {
+            cell.accessoryType = .checkmark
+            cell.textLabel?.textColor = UIColor.zx_tintColor
+        }else{
+            cell.accessoryType = .none
+            cell.textLabel?.textColor = UIColor.zx_textColorTitle
+        }
+        
+        if self.dataArray.count != 0 {
+            cell.textLabel?.text = "\(self.dataArray.object(at: indexPath.row))"
+        }
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        let headerView:UIView = UIView.init(frame: CGRect.init(x: 0, y: 0, width: ZX_BOUNDS_WIDTH, height: 40))
+        headerView.backgroundColor = UIColor.white
+        
+        let titleLable = UILabel.init(frame: CGRect.init(x: 80, y: 0, width: headerView.width-2*80, height: 39.0))
+        titleLable.text = self.titleStr
+        titleLable.textColor = UIColor.zx_tintColor
+        titleLable.backgroundColor = UIColor.clear
+        titleLable.textAlignment = .center
+        headerView.addSubview(titleLable)
+        
+        let geliView = UIView.init(frame: CGRect.init(x: 0, y: titleLable.frame.maxY, width: ZX_BOUNDS_WIDTH, height: 1.0))
+        geliView.backgroundColor = UIColor.zx_borderColor
+        headerView.addSubview(geliView)
+        
+        return headerView
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.selectedSet.removeAllObjects()
+        
+        let newCell:UITableViewCell = tableView.cellForRow(at: indexPath)!
+        if newCell.accessoryType == UITableViewCellAccessoryType.none {
+            newCell.accessoryType = .checkmark
+            newCell.textLabel?.textColor = UIColor.zx_tintColor
+        }else if newCell.accessoryType == .checkmark {
+            newCell.accessoryType = .none
+            newCell.textLabel?.textColor = UIColor.zx_textColorTitle
+            self.selectedSet .remove(indexPath)
+        }
+        
+        if delegate != nil,self.dataArray.count != 0 {
+            delegate?.didSelectedPopViewCell(self.dataArray.object(at: indexPath.row) as! String, self.flag)
+        }
+        self.loadAnimation(dismiss: true)
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let oldCell:UITableViewCell = tableView.cellForRow(at: indexPath)!
+        if oldCell.accessoryType == .checkmark {
+            oldCell.accessoryType = .none
+            oldCell.textLabel?.textColor = UIColor.zx_textColorTitle
+        }
+    }
+}

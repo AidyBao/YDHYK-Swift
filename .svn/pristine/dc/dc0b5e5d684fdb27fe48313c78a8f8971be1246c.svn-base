@@ -1,0 +1,59 @@
+//
+//  ZXDrugstoreListModel.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/7.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+@objcMembers class ZXDrugstoreListModel: LKDBModel {
+    var storeId: Int = -1
+    var groupId: Int = -1
+    var groupName: String = ""
+    var name: String = ""
+    var tel: String = ""
+    var address: String = ""
+    var longitude: String = ""
+    var latitude: String = ""
+    var provinceId: Int = -1
+    var provinceName: String = ""
+    var cityId: Int = -1
+    var cityName: String = ""
+    var districtId: Int = -1
+    var districtName: String = ""
+    var profile: String = ""
+    var headPortrait: String = ""
+    var headPortraitStr: String = ""
+    var qrCode: String = ""
+    var status: Int = -1
+    var remark: String = ""
+    var distance: String = ""
+    var isChineseMedicine: Int = -1
+    var isMember: Int = -1
+    /** 添加一个float字段，方便SQL筛选条件*/
+    var distanceF: Float = 0
+    
+    override static func mj_replacedKeyFromPropertyName() -> [AnyHashable : Any]! {
+        return ["storeId":"id"]
+    }
+    
+    override class func describeColumnDict() -> [AnyHashable : Any] {
+        var dic: Dictionary<String,Any> = Dictionary()
+        let account: LKDBColumnDes = LKDBColumnDes()
+        account.isPrimaryKey = true
+        account.columnName = "storeId"
+        
+        let name:LKDBColumnDes = LKDBColumnDes.init(generalFieldWithAuto: false, unique: false, isNotNull: true, check: nil, defaultVa: nil)
+        
+        let noField:LKDBColumnDes = LKDBColumnDes()
+        noField.isUseless = true
+        
+        dic["storeId"] = account
+        dic["name"] = name
+        dic["noField"] = noField
+        
+        return dic
+    }
+}

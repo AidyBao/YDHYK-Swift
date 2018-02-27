@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="3DF-4l-lbi" customClass="ZXAddTimeCell" customModule="YDHYK" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="106" height="71"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="106" height="71"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="add-gray" translatesAutoresizingMaskIntoConstraints="NO" id="As3-Np-nG0">
+                        <rect key="frame" x="46" y="18" width="15" height="15"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="15" id="M06-vy-wrn"/>
+                            <constraint firstAttribute="width" constant="15" id="bry-rl-oIG"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="点击添加" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M9h-Ut-dc1">
+                        <rect key="frame" x="13" y="38" width="80" height="21"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="21" id="df7-KZ-aLb"/>
+                            <constraint firstAttribute="width" constant="80" id="ibb-60-jjj"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" red="0.20392156859999999" green="0.2156862745" blue="0.2274509804" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+            </view>
+            <color key="backgroundColor" red="0.97254901959999995" green="0.97254901959999995" blue="0.97254901959999995" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="As3-Np-nG0" firstAttribute="centerX" secondItem="3DF-4l-lbi" secondAttribute="centerX" id="99U-TY-eO8"/>
+                <constraint firstItem="M9h-Ut-dc1" firstAttribute="centerX" secondItem="3DF-4l-lbi" secondAttribute="centerX" id="CzR-T5-fUt"/>
+                <constraint firstItem="As3-Np-nG0" firstAttribute="centerY" secondItem="3DF-4l-lbi" secondAttribute="centerY" constant="-10" id="YqT-1y-PHi"/>
+                <constraint firstItem="M9h-Ut-dc1" firstAttribute="top" secondItem="As3-Np-nG0" secondAttribute="bottom" constant="5" id="o9J-87-rWo"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="uzF-Pv-TBH"/>
+            <size key="customSize" width="145" height="64"/>
+            <point key="canvasLocation" x="-91" y="-15.5"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="add-gray" width="15" height="15"/>
+    </resources>
+</document>

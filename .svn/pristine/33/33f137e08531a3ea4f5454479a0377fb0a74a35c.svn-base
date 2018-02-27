@@ -1,0 +1,91 @@
+//
+//  ZXMemberCardRootViewController+TableView.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/6.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+extension ZXMemberCardRootViewController:UITableViewDelegate {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+        return .delete
+    }
+    
+    func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+        return "删除"
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            if self.cardsArray.count > 0 {
+                let model = self.cardsArray.object(at: indexPath.row) as! ZXMemberCardModel
+                self.requestForDeletedMemberCard(indexPath, model)
+            }
+        }
+    }
+}
+
+
+extension ZXMemberCardRootViewController:UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if self.cardsArray.count == 0 {
+            let listCell:ZXDrugstoreListCell = tableView.dequeueReusableCell(withIdentifier: ZXDrugstoreListCell.ZXDrugstoreListCellID, for: indexPath) as! ZXDrugstoreListCell
+            listCell.delegate = self
+            if self.drugsArray.count != 0 {
+                listCell.loadData(self.drugsArray.object(at: indexPath.row) as! ZXDrugstoreListModel)
+            }
+            return listCell
+        }else{
+            let cardCell:ZXMemeberCardCell = tableView.dequeueReusableCell(withIdentifier: ZXMemeberCardCell.ZXMemeberCardCellID, for: indexPath) as! ZXMemeberCardCell
+            cardCell.delegate = self
+            cardCell.setBackView(indexPath.row)
+            if self.cardsArray.count != 0 {
+                cardCell.loadData(self.cardsArray.object(at: indexPath.row) as! ZXMemberCardModel)
+            }
+            return cardCell
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if self.cardsArray.count == 0 {
+            return self.drugsArray.count
+        }else{
+            return self.cardsArray.count
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if self.cardsArray.count == 0 {
+            return 141.0
+        }else{
+            return 140.0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if self.cardsArray.count == 0,self.drugsArray.count != 0 {
+            return 258.0
+        }else{
+            return 10.0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        if section == 0,self.cardsArray.count == 0 ,self.drugsArray.count != 0{
+            let header:ZXNoCardHearder = tableView.dequeueReusableHeaderFooterView(withIdentifier:ZXNoCardHearder.ZXNoCardHearderID) as! ZXNoCardHearder
+            return header
+        }
+        return nil
+    }
+}

@@ -1,0 +1,31 @@
+//
+//  ZXSButton.swift
+//  YDHYK
+//
+//  Created by 120v on 2017/11/17.
+//  Copyright © 2017年 screson. All rights reserved.
+//
+
+import UIKit
+
+//@IBDesignable
+class ZXSButton: UIButton {
+
+//    override init(frame: CGRect) {
+//        super.init(frame: frame)
+//        setTitleColor(UIColor.white, for: .normal)
+//        setImage(#imageLiteral(resourceName: "icon-more"), for: .normal)
+//        setImage(#imageLiteral(resourceName: "icon-shou"), for: .selected)
+//        sizeToFit()
+//    }
+//
+//    required init?(coder aDecoder: NSCoder) {
+//        super.init(coder:aDecoder)
+//    }
+//
+//    override func layoutSubviews() {
+//        super.layoutSubviews()
+//        titleLabel?.frame.origin.x = center.x - (titleLabel?.frame.size.width)!*0.5
+//        imageView?.frame.origin.x = titleLabel!.frame.maxX + 2
+//    }
+}
